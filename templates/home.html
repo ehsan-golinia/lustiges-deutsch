@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lustiges Deutsch{% endblock %}
+
+{% block content %}
+    <header class="text-center my-5">
+    <a href="{% url 'home' %}" class="fw-bold text-decoration-none text-uppercase text-warning h1">💚 Lustiges Deutsch 💚</a>
+  </header>
+    <div class="container">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4">
+    <!-- Card 1 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+          <div class="card bg-info custom-card">
+            <img src="{% static 'images/vokabel.png' %}" class="card-img-top" alt="Vokabel">
+            <div class="card-body">
+              <p class=" text-center fw-bold h4">Vokabel</p>
+            </div>
+          </div>
+            </a>
+        </div>
+        <!-- Card 2 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+              <div class="card bg-info custom-card">
+                <img src="{% static 'images/adjektiv.png' %}" class="card-img-top" alt="Adjektiv">
+                <div class="card-body">
+                  <p class=" text-center fw-bold h4">Adjektiv</p>
+                </div>
+              </div>
+            </a>
+        </div>
+        <!-- Card 3 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+          <div class="card bg-info custom-card">
+            <img src="{% static 'images/partizip_II.png' %}" class="card-img-top" alt="Partizip II">
+            <div class="card-body">
+              <p class=" text-center fw-bold h4">Partizip II</p>
+            </div>
+          </div>
+            </a>
+        </div>
+        <!-- Card 4 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+              <div class="card bg-info custom-card">
+                <img src="{% static 'images/satz.png' %}" class="card-img-top" alt="Satz">
+                <div class="card-body">
+                  <p class=" text-center fw-bold h4">Satz</p>
+                </div>
+              </div>
+            </a>
+        </div>
+        <!-- Card 5 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+          <div class="card bg-info custom-card">
+            <img src="{% static 'images/artikel.png' %}" class="card-img-top" alt="Vokabel">
+            <div class="card-body">
+              <p class=" text-center fw-bold h4">Artikel</p>
+            </div>
+          </div>
+            </a>
+        </div>
+        <!-- Card 6 -->
+        <div class="col">
+            <a href="/" class="text-decoration-none text-dark">
+              <div class="card bg-info custom-card">
+                <img src="https://via.placeholder.com/100" class="card-img-top" alt="Dativ">
+                <div class="card-body">
+                  <p class=" text-center fw-bold h4">Dativ</p>
+                </div>
+              </div>
+            </a>
+        </div>
+  </div>
+  </div>
+{% endblock %}
