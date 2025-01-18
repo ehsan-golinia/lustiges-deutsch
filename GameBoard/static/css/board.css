@@ -1,0 +1,22 @@
+.cell {
+        fill: #bae8e8;
+        stroke: #385170;
+        color: #385170;
+        cursor: pointer;
+}
+  .START {
+    fill: #00aaff;
+    opacity: 100%;
+  }
+  .END {
+    fill: #ffffff;
+  }
+  .sp-text {
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: 'Roboto', serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings: 'wdth' 100;
+  }

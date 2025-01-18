@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <section class="bg-image" style="background-image: url('{% static 'images/background.jpg' %}');">
+  <div class="mask d-flex align-items-center h-100 gradient-custom-3">
+    <div class="container col-sm ">
+      <div class="row d-flex justify-content-center align-items-center ">
+        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+          <div class="card text-white bg-dark m-4" style="border-radius: 15px;">
+            <div class="card-body-dark p-5">
+              <h2 class="text-uppercase text-center mb-5">Login</h2>
+
+              <form action="" method="POST">
+                  {% csrf_token %}
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.username }}
+                  <label class="form-label required" for="form3Example3cg">Username</label>
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.password }}
+                  <label class="form-label required" for="form3Example4cg">Password</label>
+                </div>
+
+                <div class="d-flex justify-content-center">
+                  <button  type="submit" name="login" class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">Login</button>
+                </div>
+
+                <p class="text-center text-muted mt-5 mb-0">Have already an account? <a href="{% url 'user_register' %}"
+                    class="fw-bold text-warning"><u>Register here</u></a></p>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

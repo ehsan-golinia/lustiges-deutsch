@@ -20,6 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env('.env')  # This reads the .env file
 
+LOGIN_URL = '/admin/'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -41,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'GameBoard.apps.GameboardConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,14 +81,20 @@ WSGI_APPLICATION = 'LustigesDeutsch.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_ROUTERS = ['db_router.DatabaseRouter']
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
-    'deutsch': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'deutschDB.sqlite3',
+    'deutschDB': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'deutsch',  # PostgreSQL database name (NOT a file path).
+        'USER': 'ehsan',  # PostgreSQL username.
+        'PASSWORD': 'Pardis74',  # PostgreSQL password.
+        'HOST': 'localhost',  # Set to 'localhost' for local development or the database server hostname.
+        'PORT': '5432',  # PostgreSQL port
     }
 }
 
@@ -113,7 +123,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Time zone for +3:30 GMT
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -138,3 +149,9 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Define the directory where uploaded media files will be stored
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# URL that serves the media files
+MEDIA_URL = '/media/'

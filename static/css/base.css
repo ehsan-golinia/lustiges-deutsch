@@ -5,5 +5,11 @@
 
 .custom-card:hover {
   transform: translateY(-10px); /* Lift effect */
-  box-shadow: 0 10px 20px rgba(120, 60, 60); /* Add shadow */
+  box-shadow: 0 6px 12px rgb(190, 255, 0); /* Add shadow */
+}
+
+.required:before {
+  content: "* ";
+  color: red;
+  font-weight: bold;
 }

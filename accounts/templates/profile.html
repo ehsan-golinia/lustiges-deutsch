@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+
+        <section class="bg-image"
+  style="background-image: url('{% static 'images/background.jpg' %}');">
+  <div class="mask d-flex align-items-center h-100 gradient-custom-3">
+    <div class="container col-sm ">
+      <div class="row d-flex justify-content-center align-items-center ">
+        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+          <div class="card text-white bg-dark m-4" style="border-radius: 15px;">
+            <div class="card-body-dark p-5">
+                <h2 class="text-uppercase text-center mb-5"><span class="text-warning">{{ user.first_name }}</span>'s Profile</h2>
+
+              <form action="" method="POST">
+                  {% csrf_token %}
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.first_name }}
+                  <label class="form-label" for="form3Example1cg">First Name</label>
+                </div>
+
+                  <div data-mdb-input-init class="form-outline mb-4">
+                      {{ form.last_name }}
+                  <label class="form-label" for="form3Example1cg">Last Name</label>
+                </div>
+
+                  <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.email }}
+                  <label class="form-label" for="form3Example3cg">Email</label>
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.username }}
+                  <label class="form-label required" for="form3Example3cg">Username</label>
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.password }}
+                  <label class="form-label" for="form3Example4cg">Password</label>
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    {{ form.password2 }}
+                  <label class="form-label" for="form3Example4cdg">Repeat your password</label>
+                </div>
+
+
+                <div class="d-flex justify-content-center">
+                  <button  type="submit" name="update" class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">Update</button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

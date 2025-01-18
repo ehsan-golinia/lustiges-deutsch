@@ -17,10 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('admin/', admin.site.urls),
-    path('<str:gameName>/playervsplayer/', views.playervsplayer),
-    # path('<str:gameName>/playgame', include('Game.urls')),
+    path('admin/', admin.site.urls, name='admin'),
+    path('accounts/', include('accounts.urls')),
+    path('all_ranking/', views.all_ranking, name='all_ranking'),
+    path('playervsplayer/<str:game_name>/', views.playervsplayer),
+    path('playgame/', include('GameBoard.urls')),
+    path('vokabel/add/', views.add_vokabel, name='add_vokabel'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
