@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from .models import Vokabel
+from Vokabel.models import Vokabel
 from accounts.models import GamesRecords
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -10,7 +10,7 @@ import random
 
 # Create your views here.
 
-cell_size = 50
+cell_size = 52
 board_data = [
     {'value': 0, 'x': 2, 'y': 6, 'special': 'START'},
     {'value': 1, 'x': 2, 'y': 5, 'special': '1'},
@@ -44,24 +44,29 @@ board_data = [
     {'value': 29, 'x': 8, 'y': 5, 'special': '29'},
     {'value': 30, 'x': 8, 'y': 6, 'special': 'END'},
 ]
-g_names = ['vokabel', 'adjektiv', 'partizip_II']
+
 MIN_SCORE = 10
+
 
 def get_quiz():
     all_exm = Vokabel.objects.all()
+    if not all_exm.exists():
+        return None, None
     rand_id = random.randint(1, len(all_exm))
     my_rand = all_exm.get(id=rand_id)
-    return my_rand
+    my_artikel = my_rand.german.split(' ')
+    return my_rand, my_artikel
 
 
-def play_game_vokabel(request, game_name='vokabel'):
+def play_game_artikel(request, game_name='artikel'):
     if request.user.is_authenticated:
-        if (game_name in g_names) and not request.session['winner']:
+        if not request.session['winner']:
             player_count = request.session.get('playerCount', 1)
             players = request.session.get('players', [])
-            dice_number = request.session.get('dice_number', 6)
+            dice_number = request.session.get('dice_number', 0)
             q_box = request.session.get('q_box', False)
             rand_example = None
+            my_artikel = [None, None]
 
             if request.method == 'POST':
 
@@ -94,16 +99,17 @@ def play_game_vokabel(request, game_name='vokabel'):
                         if player['turn']:
                             if (player['game_state'] + dice_number) <= 30:
                                 player['game_state'] += dice_number
+                                player['dice_history'].append(dice_number)
                                 if player['game_state'] != 30:
                                     q_box = True
-                                    rand_example = get_quiz()
+                                    rand_example, my_artikel = get_quiz()
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
                                 winner = User.objects.get(id=player['id'])
                                 GamesRecords.objects.create(
                                     user=winner,
-                                    game_name='Vokabel',
+                                    game_name='Artikel',
                                     score=player['game_score'])
                                 print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
@@ -113,6 +119,8 @@ def play_game_vokabel(request, game_name='vokabel'):
                                 person = User.objects.get(id=pl['id'])
                                 person.profile.total_scores += pl['game_score']
                                 person.profile.save()
+                                person.scores.artikel_score += pl['game_score']
+                                person.scores.save()
 
             request.session['players'] = players
             circle_data = []
@@ -138,9 +146,11 @@ def play_game_vokabel(request, game_name='vokabel'):
                 'circle_data': circle_data,
                 'dice_number': dice_number,
                 'q_box': q_box,
-                'rand_example': rand_example
+                'rand_example': rand_example,
+                'artikel': my_artikel[0],
+                'vokabel': my_artikel[1]
             }
-            return render(request, 'vokabel_game.html', context=context)
+            return render(request, 'artikel_game.html', context=context)
         else:
             return redirect(reverse('home'))
     else:

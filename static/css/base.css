@@ -3,6 +3,12 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.custom-card .hover-title {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    }
+
 .custom-card:hover {
   transform: translateY(-10px); /* Lift effect */
   box-shadow: 0 6px 12px rgb(190, 255, 0); /* Add shadow */
@@ -12,4 +18,16 @@
   content: "* ";
   color: red;
   font-weight: bold;
+}
+
+.custom-card:hover .hover-title {
+        opacity: 1;
+    }
+
+.custom-card img {
+transition: opacity 0.3s ease;
+}
+
+.custom-card:hover img {
+    opacity: 0; /* Optional: Add an opacity effect on hover */
 }

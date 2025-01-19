@@ -1,0 +1,71 @@
+<div class="modal bg-dark fade" id="exampleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="result-place">
+        <h5 class="modal-title">🇺🇸 {{ rand_example.vokabel.english }}</h5>
+        <h5 class="modal-title">🇹🇷 {{ rand_example.vokabel.turkish }}</h5>
+      </div>
+      <div class="modal-body">
+          <div class="row m-1" id="s-result-msg">
+              <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Singular:</label></div>
+              <div class="col"><input type="text" id="singular_box" name="answer_box" {% if rand_option == 'plural' %}value="{{ rand_example.singular }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/>
+</div>
+
+              </div>
+          <div class="row m-1" id="p-result-msg">
+              <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Plural:</label></div>
+              <div class="col"><input type="text" id="plural_box" name="answer_box" {% if rand_option == 'singular' %}value="{{ rand_example.plural }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/>
+</div>
+
+              </div>
+      </div>
+      <div class="modal-footer" id="button-place">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" name="answer">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // Pass players data to JavaScript
+    let score = 0;
+    const s_encodedValue = document.getElementById('sHiddenData').dataset.value;
+    const s_get_answer = atob(btoa(s_encodedValue));
+    const p_encodedValue = document.getElementById('pHiddenData').dataset.value;
+    const p_get_answer = atob(btoa(p_encodedValue));
+    document.querySelector('button[name="answer"]').addEventListener('click', function(e) {
+    // Prevent any default form submission
+    e.preventDefault();
+
+    const singular_answer = document.getElementById('singular_box').value;
+    const plural_answer = document.getElementById('plural_box').value;
+    console.log(singular_answer, plural_answer);
+    if (singular_answer !== '' && plural_answer !== '') {
+        if (singular_answer === s_get_answer && plural_answer === p_get_answer) {
+            score = 1;
+            const s_result_msg = document.getElementById('s-result-msg');
+            s_result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title"><span class="text-warning">Singular:</span> {{ rand_example.singular }}</h4></div>`;
+            const p_result_msg = document.getElementById('p-result-msg');
+            p_result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title"><span class="text-warning">Plural:</span> {{ rand_example.plural }}</h4></div>`;
+
+            const result_place = document.getElementById('result-place');
+            result_place.innerHTML = `<h5 class="modal-title text-success">✅ Correct Answer</h5><h5 class="modal-title text-success">+1 point</h5>`;
+        } else {
+            const s_result_msg = document.getElementById('s-result-msg');
+            s_result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title"><span class="text-warning">Singular:</span> {{ rand_example.singular }}</h4></div>`;
+            const p_result_msg = document.getElementById('p-result-msg');
+            p_result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title"><span class="text-warning">Plural:</span> {{ rand_example.plural }}</h4></div>`;
+
+            const result_place = document.getElementById('result-place');
+            result_place.innerHTML = `<h5 class="modal-title text-danger">❌ Wrong Answer</h5><h5 class="modal-title text-danger">0 point</h5>`;
+        }
+
+        const button_place = document.getElementById('button-place');
+        button_place.innerHTML = `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success" name="next_turn" value="">Continue</button>`;
+        document.querySelector('button[name="next_turn"]').value = score;
+    }
+
+});
+</script>

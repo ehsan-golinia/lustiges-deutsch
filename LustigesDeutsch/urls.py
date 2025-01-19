@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 from django.conf import settings
+from django.conf.urls import handler404
 from django.conf.urls.static import static
+
+handler404 = 'LustigesDeutsch.views.custom_page_not_found'
 
 
 urlpatterns = [
@@ -26,9 +29,10 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('accounts/', include('accounts.urls')),
     path('all_ranking/', views.all_ranking, name='all_ranking'),
-    path('playervsplayer/<str:game_name>/', views.playervsplayer),
-    path('playgame/', include('GameBoard.urls')),
-    path('vokabel/add/', views.add_vokabel, name='add_vokabel'),
+    path('<str:game_name>/playervsplayer/', views.playervsplayer),
+    path('vokabel/', include('Vokabel.urls')),
+    path('singular_plural/', include('Singular_Plural.urls')),
+    path('artikel/', include('Artikel.urls')),
 ]
 
 if settings.DEBUG:

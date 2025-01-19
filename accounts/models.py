@@ -16,6 +16,22 @@ class UserProfile(models.Model):
     )
 
     def __str__(self):
+        return f"{self.user.username} --> {self.total_scores}"
+
+
+class UserScores(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='scores')
+    vokabel_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    singular_plural_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    artikel_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    adjektiv_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    adjektiv_deklination_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    present_verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    past_verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    partizip_II_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+
+    def __str__(self):
         return f"{self.user.username}"
 
 

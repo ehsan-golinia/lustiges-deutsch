@@ -1,11 +1,39 @@
 from django.contrib import admin
-from .models import UserProfile, GamesRecords
-from GameBoard.models import Vokabel, SingularPlural
+from .models import UserProfile, GamesRecords, UserScores
+from Vokabel.models import Vokabel
+from Singular_Plural.models import SingularPlural
 
 # Register your models here.
 
-admin.site.register(UserProfile)
-admin.site.register(GamesRecords)
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'total_scores')  # Specify the fields you want as columns
+    search_fields = ('user', 'total_scores')       # Add a search bar for these fields
+    ordering = ('-id',)                                    # Order by id
+
+
+admin.site.register(UserProfile, UserProfileAdmin)
+
+
+class GamesRecordsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'game_name', 'score', 'date')  # Specify the fields you want as columns
+    search_fields = ('user', 'game_name', 'score')       # Add a search bar for these fields
+    ordering = ('-id',)                                    # Order by id
+
+
+admin.site.register(GamesRecords, GamesRecordsAdmin)
+
+
+class UserScoresAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user',
+                    'vokabel_score',
+                    'singular_plural_score',
+                    'artikel_score')  # Specify the fields you want as columns
+    search_fields = ('user', 'vokabel_score', 'singular_plural_score', 'artikel_score')       # Add a search bar for these fields
+    ordering = ('id',)                                    # Order by id
+
+
+admin.site.register(UserScores, UserScoresAdmin)
 
 
 class VokabelAdmin(admin.ModelAdmin):

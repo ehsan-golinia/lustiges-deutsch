@@ -5,9 +5,11 @@
 {% block content %}
 
     <div class="container">
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
             <div class="col">
-                {% include 'board.html' %}
+
+                    {% include 'board.html' %}
+
             </div>
             <div class="col">
                 <div class="row text-warning">
@@ -26,9 +28,24 @@
 
                 <div class="col">
                     <div class="dice img-fluid bg-white p-2 d-flex justify-content-center mx-5">
-                        <img src="{% static 'images/dice-' %}{{ dice_number }}.png" alt="Dice" width="60px">
+                        <img src="{% static 'images/dice/dice-' %}{{ dice_number }}.png" alt="Dice" width="60px">
                     </div>
                 </div>
+
+                </div>
+            <div class="row">
+
+                <hr>
+                <hr>
+                <hr>
+                <hr>
+                </div>
+            <div class="row mx-5">
+                {% for p in players %}
+                    <div class="row {% if p.color == 'red' %}text-danger{% elif p.color == 'green' %}text-success{% endif %} my-2">
+                        <h4>{{ p.name }} <i class="fa-solid fa-circle-right fa-2xs" style="color: #63E6BE;"></i> <span id="j{{ p.jersey }}"></span></h4>
+                    </div>
+                {% endfor %}
 
                 </div>
             </div>
@@ -45,7 +62,7 @@
                         value="{% for pl in players %}{% if pl.turn %}{{ pl.jersey }}{% endif %}{% endfor %}">
                     Roll Dice</button>
             </div>
-            {% include 'modals.html' %}
+            {% include 'vokabel_modals.html' %}
     </form>
 
 
@@ -118,4 +135,13 @@
         }
     });
 </script>
+
+    <script>
+        const current_dice = {{ dice_number }};
+        if (current_dice !== 0) {
+            {% for p in players %}
+                document.getElementById("j{{ p.jersey }}").innerHTML += "{{ p.dice_history|join:', ' }}";
+            {% endfor %}
+        }
+    </script>
 {% endblock %}
