@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm, UpdateForm
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import UserProfile, UserScores
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
@@ -42,13 +42,12 @@ def user_register(request):
                     messages.error(request, 'Username already exists!', extra_tags='danger')
                 else:
                     user = User.objects.create_user(username=cd['username'], password=cd['password'])
-                    first_name = cd['first_name']
-                    last_name = cd['last_name']
                     user.first_name = cd.get('first_name', '')
                     user.last_name = cd.get('last_name', '')
                     user.save()
                     # Create the UserProfile
                     UserProfile.objects.create(user=user)
+                    UserScores.objects.create(user=user)
                     messages.success(request, 'Account created successfully', extra_tags='success')
                     return redirect(reverse('home'))
     else:

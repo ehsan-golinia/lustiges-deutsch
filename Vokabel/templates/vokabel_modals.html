@@ -2,53 +2,81 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header" id="result-place">
-        <h5 class="modal-title">🇺🇸 {{ rand_example.english }}</h5>
-        <h5 class="modal-title">🇹🇷 {{ rand_example.turkish }}</h5>
+
       </div>
       <div class="modal-body">
           <div class="row" id="result-msg">
               <div class="col-1 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="h2">🇩🇪</label></div>
-              <div class="col"><input type="text" id="answer_box" name="answer_box" class='form-control form-control-lg col-sm' autocomplete="off"/>
-</div>
-
+              <div class="col"><input type="text" id="answer_box" name="answer_box" class='form-control form-control-lg col-sm' autocomplete="off"/></div>
               </div>
+
       </div>
       <div class="modal-footer" id="button-place">
 {#        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>#}
-        <button type="button" class="btn btn-primary" name="answer">Submit</button>
+        <button type="button" id="do_submit" class="btn btn-primary" name="answer">Submit</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+    let my_button = document.querySelector('button[name="answer"]');
     // Pass players data to JavaScript
-    let score = 0;
-    const encodedValue = document.getElementById('hiddenData').dataset.value;
-    const get_answer = atob(btoa(encodedValue));
-    document.querySelector('button[name="answer"]').addEventListener('click', function(e) {
-    // Prevent any default form submission
-    e.preventDefault();
+    my_button.addEventListener('click', function(e) {
+        let score = 0;
+        var get_answer = atob(document.getElementById('hiddenData').dataset.value);
+        // Prevent any default form submission
+        e.preventDefault();
 
-    const client_answer = document.getElementById('answer_box').value;
-    if (client_answer !== '') {
-        if (client_answer === get_answer) {
-            score = 1;
-            const result_msg = document.getElementById('result-msg');
-            result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h2 class="modal-title">🇩🇪 {{ rand_example.german }}</h2></div>`;
-            const result_place = document.getElementById('result-place');
-            result_place.innerHTML = `<h5 class="modal-title text-success">✅ Correct Answer</h5><h5 class="modal-title text-success">+1 point</h5>`;
-        } else {
-            const result_msg = document.getElementById('result-msg');
-            result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h2 class="modal-title">🇩🇪 {{ rand_example.german }}</h2></div>`;
-            const result_place = document.getElementById('result-place');
-            result_place.innerHTML = `<h5 class="modal-title text-danger">❌ Wrong Answer</h5><h5 class="modal-title text-danger">0 point</h5>`;
+        const client_answer = document.getElementById('answer_box').value;
+        if (client_answer !== '') {
+            if (client_answer === get_answer) {
+                score = 1;
+                const result_msg = document.getElementById('result-msg');
+                result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h2 class="modal-title">🇩🇪 ${get_answer}</h2></div>`;
+                const result_place = document.getElementById('result-place');
+                result_place.innerHTML = `<h5 class="modal-title text-success">✅ Correct Answer</h5><h5 class="modal-title text-success">+1 point</h5>`;
+            } else {
+                const result_msg = document.getElementById('result-msg');
+                result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h2 class="modal-title">🇩🇪 ${get_answer}</h2></div>`;
+                const result_place = document.getElementById('result-place');
+                result_place.innerHTML = `<h5 class="modal-title text-danger">❌ Wrong Answer</h5><h5 class="modal-title text-danger">0 point</h5>`;
+            }
+
+            my_button.id = 'next_turn';
+            my_button.value = score;
+            my_button.className = 'btn btn-success';
+            my_button.textContent = 'Continue';
+
+            my_button.addEventListener('click', function handleNextTurn(e) {
+                e.preventDefault();
+
+                // Reset the button back to "Submit"
+                my_button.id = 'do_submit';
+                my_button.name = 'answer';
+                my_button.value = '';
+                my_button.className = 'btn btn-primary';
+                my_button.textContent = 'Submit';
+
+                // Call the nextTurn function with the current score
+                nextTurn(score);
+
+                // Remove this event listener to prevent it from being triggered again
+                my_button.removeEventListener('click', handleNextTurn);
+            }, {once: true});
         }
+    });
+    /*
+    document.getElementById('next_turn').addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'next_turn') {
+            e.preventDefault();
+            my_button.id = 'next_turn';
+            my_button.value = "";
+            my_button.className = 'btn btn-primary';
+            my_button.textContent = 'Submit';
+            nextTurn(e.target.value);
+        }
+    });
+    */
 
-        const button_place = document.getElementById('button-place');
-        button_place.innerHTML = `<button type="submit" class="btn btn-success" name="next_turn" value="">Continue</button>`;
-        document.querySelector('button[name="next_turn"]').value = score;
-    }
-
-});
 </script>

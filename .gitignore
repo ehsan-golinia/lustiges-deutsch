@@ -1,9 +1,11 @@
 # Virtual environment
 deutschENV/
+venv/
 
 # Python bytecode
 __pycache__/
 .idea/
+.DS_Store
 *.pyc
 *.pyo
 
@@ -13,8 +15,10 @@ __pycache__/
 # Django-related
 db.sqlite3
 media/
+migrations/
 staticfiles/
 
 # Logs
 *.log
 
+node/

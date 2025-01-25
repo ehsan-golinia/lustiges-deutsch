@@ -28,6 +28,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls, name='admin'),
     path('accounts/', include('accounts.urls')),
+    path('lobby/', include('Lobby.urls')),
     path('all_ranking/', views.all_ranking, name='all_ranking'),
     path('<str:game_name>/playervsplayer/', views.playervsplayer),
     path('vokabel/', include('Vokabel.urls')),

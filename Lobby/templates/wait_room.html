@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container text-center text-light">
+    <h1 class="mb-4">Waiting Room</h1>
+
+    <!-- Room Info Section -->
+    <div class="card bg-dark text-light mb-4 mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <h5 class="card-title text-info mb-3">Room Information</h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control bg-dark text-light" value="{{ room.room_id }}" id="roomId" readonly>
+                <button class="btn btn-outline-info" type="button" onclick="copyRoomId()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <p class="text-warning mb-2">
+                <i class="fas fa-share-alt"></i> Share this ID with your friend to join the game
+            </p>
+            <p class="mb-0">
+                <i class="fas fa-gamepad"></i> Game: <span>{{ room.game_name|title }}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="row mx-1 mx-lg-5">
+        <table class="table table-bordered table-striped">
+    <thead>
+        <tr id="room-heads">
+        </tr>
+        <tr id="room-players">
+        </tr>
+    </thead>
+</table>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="d-flex justify-content-center align-items-center mb-4">
+        <div class="spinner-border text-info me-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div id="status" class="text-info h5 mb-0">Waiting for player <span id="waiting-for"></span></div>
+    </div>
+
+    <!-- Cancel Button -->
+    <form action="{% url 'cancel_room' room.room_id %}" method="POST" class="mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+    </form>
+</div>
+
+    <script>
+        const max_players = {{ room.max_players }};
+        const roomHeadsElement = document.getElementById('room-heads');
+        [...Array(max_players)].forEach((_, index) => {
+            const playerCell = document.createElement('th');
+            playerCell.className = 'col text-light';
+            playerCell.textContent = `Player ${index + 1}`;
+            roomHeadsElement.appendChild(playerCell);
+        });
+    </script>
+
+<script>
+    const game_colors = {{ game_colors|safe }}
+
+// Function to copy room ID
+function copyRoomId() {
+    const roomId = document.getElementById('roomId');
+    roomId.select();
+    roomId.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand('copy');
+
+    // Show feedback
+    const button = document.querySelector('.btn-outline-info');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.classList.remove('btn-outline-info');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-info');
+    }, 2000);
+}
+
+const bellSound = new Audio('/static/sounds/bell.wav');
+// Check room status every 3 seconds
+function checkGameStatus() {
+    fetch(`/lobby/check_status/${document.getElementById('roomId').value}/`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.status === 'playing') {
+                bellSound.play()
+                .then(async () => {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                })
+                .then(() => {
+                    window.location.href = `/${data.game_name}/multiplaygame/${data.room_id}/`;
+                })
+                .catch(err => {
+                    // If sound fails to play, just redirect
+                    window.location.href = `/${data.game_name}/multiplaygame/${data.room_id}/`;
+                });
+            }
+            if (data.status === 'error') {
+                window.location.href = `/`;
+            }
+            const waitingElement = document.getElementById('waiting-for');
+            const roomPlayersElement = document.getElementById('room-players');
+            waitingElement.textContent = data.players.length + 1;
+            roomPlayersElement.innerHTML = '';
+            data.players.forEach(player => {
+                const playerCell = document.createElement('th');
+                playerCell.className = 'col bg-' + game_colors[player[1]];
+                playerCell.textContent = player[0];
+                roomPlayersElement.appendChild(playerCell);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Start checking status
+const statusCheck = setInterval(checkGameStatus, 1000);
+
+// Clear interval when leaving page
+window.onbeforeunload = function() {
+    clearInterval(statusCheck);
+};
+
+</script>
+{% endblock %}

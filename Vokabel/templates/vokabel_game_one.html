@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ game_name | title }} Game{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
+            <div class="col">
+
+                    {% include 'board.html' %}
+
+            </div>
+            <div class="col">
+                <div class="row text-warning">
+                    {% for p in players %}
+                    <div class="col text-center text-{% for k,v in game_colors.items %}{% if k == p.color %}{{ v }}{% endif %}{% endfor %}">
+                        <h4>{% if p.turn %}<img
+                            src="{{ p.photo }}"
+                            alt="Profile Picture"
+                            class="rounded-circle"
+                            style="width: 30px; height: 30px; object-fit: cover; margin-right: 8px;">{% endif %}{{ p.name }}</h4>
+                        <h2>{{ p.game_score }}</h2>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+
+                <div class="col">
+                    <div class="dice img-fluid bg-white p-2 d-flex justify-content-center mx-5">
+                        <img src="{% static 'images/dice/dice-' %}{{ dice_number }}.png" alt="Dice" width="60px">
+                    </div>
+                </div>
+
+                </div>
+            <div class="row">
+
+                <hr>
+                <hr>
+                <hr>
+                <hr>
+                </div>
+            <div class="row mx-5">
+                {% for p in players %}
+                    <div class="row text-{% for k,v in game_colors.items %}{% if k == p.color %}{{ v }}{% endif %}{% endfor %} my-2">
+                        <h4>{{ p.name }} <i class="fa-solid fa-circle-right fa-2xs" style="color: #63E6BE;"></i> <span id="j{{ p.jersey }}"></span></h4>
+                    </div>
+                {% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="" method="POST">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center mt-5">
+                <button type="submit"
+                            name="end_game"
+                            class="btn btn-outline-danger mx-2"
+                            value="{{ user.username }}"
+                            onclick="return confirmEndGame()">End Game</button>
+                {#                <button type="submit" name="player_id" class="btn btn-danger mx-2" value="1">Move Player 1</button>#}
+                <div id="hiddenData" data-value="{{ rand_example.german|safe }}" style="display: none;"></div>
+                {#                <button type="submit" name="player_id" class="btn btn-success mx-2" value="2">Move Player 2</button>#}
+                <button type="submit" name="player_jersey" class="btn btn-warning mx-2"
+                        value="{% for pl in players %}{% if pl.turn %}{{ pl.jersey }}{% endif %}{% endfor %}">
+                    Roll Dice</button>
+            </div>
+            {% include 'vokabel_modals.html' %}
+    </form>
+
+    <script>
+        // Check room status every 3 seconds
+        function checkGameStatus() {
+            fetch(`/lobby/check_status/{{ room.room_id }}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'finished') {
+                        alert('{{ room.winner }} won!');
+                        window.location.href = `/`;
+                    }
+                    if (data.status === 'error') {
+                        alert('The Game Room Closed!');  // Show alert message
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Start checking status
+        const statusCheck = setInterval(checkGameStatus, 1000);
+
+        // Clear interval when leaving page
+        window.onbeforeunload = function() {
+            clearInterval(statusCheck);
+        };
+    </script>
+
+
+
+    <script>
+    // Define the exact positions of the cells in the board layout
+    const boardData = {{ board_data|safe }};
+
+    const cellSize = {{ cell_size|safe }};
+    const circleData = {{ circle_data|safe }};
+
+
+
+  // Create the SVG board
+  const svg = d3.select('#board');
+
+  // Draw cells
+  svg.selectAll('.cell')
+    .data(boardData)
+    .enter()
+    .append('rect')
+    .attr('class', (d) => `cell ${d.special}`)
+    .attr('x', (d) => d.x * cellSize)
+    .attr('y', (d) => d.y * cellSize)
+    .attr('width', cellSize)
+    .attr('height', cellSize);
+
+
+
+  // Add text labels
+  svg.selectAll('text')
+    .data(boardData)
+    .enter()
+    .append('text').attr('class', 'sp-text')
+    .attr('x', (d) => d.x * cellSize + cellSize / 2)
+    .attr('y', (d) => d.y * cellSize + cellSize / 2)
+    .text((d) => d.special)
+    .style('pointer-events', 'none') // Prevent text from blocking clicks
+    .style('font-size', '14px')
+    .style('fill', '#385170');
+
+    // Add player circle
+  const player = svg.selectAll('circle')
+    .data(circleData)
+    .join(
+        enter => enter.append('circle')
+        .attr('r', 20)
+        .style('fill', d => d.fill).style('opacity', 0.6)
+        .style('stroke', 'black')
+        .attr('cx', d => d.px)
+        .attr('cy', d => d.py),
+        update => update
+    );
+
+
+  player.transition()
+    .duration(1000) // 1-second animation
+    .ease(d3.easeCubicInOut)
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+
+    const q_box = {{ q_box|lower }}
+    document.addEventListener('DOMContentLoaded', function() {
+        const myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+            backdrop: 'static',  // Modal won't close when clicking outside
+            keyboard: false      // Modal won't close on pressing ESC key
+        });
+        if (q_box) {
+            setTimeout(()=>myModal.show(),3000);
+        }
+    });
+</script>
+
+    <script>
+        const current_dice = {{ dice_number }};
+        if (current_dice !== 0) {
+            {% for p in players %}
+                document.getElementById("j{{ p.jersey }}").innerHTML += "{{ p.dice_history|join:', ' }}";
+            {% endfor %}
+        }
+    </script>
+
+    <script>
+    // WebSocket setup
+    const roomId = "{{ room.room_id }}";
+    const gameName = "{{ game_name }}";
+    const wsUrl = `ws://${window.location.host}/ws/${gameName}/${roomId}/`;
+    let socket;
+
+    // Initialize WebSocket connection
+    function initializeWebSocket() {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = function () {
+            console.log('WebSocket connection established');
+        };
+
+        socket.onmessage = handleSocketMessage;
+
+        socket.onclose = function (event) {
+            console.warn('WebSocket connection closed:', event.reason || 'Unknown reason');
+            attemptReconnect(); // Attempt to reconnect on disconnection
+        };
+
+        socket.onerror = function (error) {
+            console.error('WebSocket error:', error);
+        };
+    }
+
+    // Handle incoming WebSocket messages
+    function handleSocketMessage(event) {
+        try {
+            const data = JSON.parse(event.data);
+
+            if (data.action === 'update_game_state') {
+                const gameState = data.payload;
+                console.log('Updated game state:', gameState);
+                updateGameStateUI(gameState); // Update the UI with the new state
+            } else {
+                console.warn('Unhandled WebSocket action:', data.action);
+            }
+        } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+        }
+    }
+
+    // Attempt to reconnect WebSocket
+    function attemptReconnect() {
+        setTimeout(() => {
+            console.log('Attempting to reconnect WebSocket...');
+            initializeWebSocket();
+        }, 5000); // Retry after 5 seconds
+    }
+
+    // Send dice roll action to server
+    function rollDice() {
+        const diceValue = Math.floor(Math.random() * 6) + 1;
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                action: 'roll_dice',
+                payload: { diceValue }
+            }));
+        } else {
+            console.error('WebSocket is not open. Dice roll cannot be sent.');
+        }
+    }
+
+    // Update the UI with the new game state
+    function updateGameStateUI(gameState) {
+        // Example: Update player positions, scores, etc.
+        // Implement game-specific updates here.
+        console.log('Updating UI with game state:', gameState);
+    }
+
+    // Initialize WebSocket connection on page load
+    document.addEventListener('DOMContentLoaded', initializeWebSocket);
+</script>
+
+
+{% endblock %}

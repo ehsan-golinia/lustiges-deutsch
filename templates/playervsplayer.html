@@ -3,39 +3,127 @@
 
 {% block title %}Player vs Player{% endblock %}
 
+{% block styles %}
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .color-radio {
+      display: none;
+    }
+
+    .color-radio + label {
+      display: block;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .color-radio + label:hover {
+      transform: scale(1.05);
+    }
+
+    .color-radio:checked + label {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px white, 0 0 0 4px #888;
+    }
+
+    /* Set background color for each label */
+    #green + label { background-color: green; }
+    #red + label { background-color: red; }
+    #yellow + label { background-color: yellow; }
+    #blue + label { background-color: blue; }
+{% endblock %}
+
 {% block content %}
-    <header class="text-center my-5">
-    <a href="{% url 'home' %}" class="fw-bold text-decoration-none text-uppercase text-warning h1">Choose your option</a>
-  </header>
-    <div class="container">
-        <form action="" method="POST">
-            {% csrf_token %}
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4 d-flex justify-content-center">
-        <!-- Card 1 -->
-        <div class="col">
-            <div class="d-inline-block">
-      <input type="radio" class="btn-check" name="radioOption" id="radio1" value="1" autocomplete="off" checked>
-      <label for="radio1" class="btn btn-outline-info p-0 border-0">
-            <img src="{% static 'images/1-player.png' %}" class="card-img-top" alt="1 player">
-        <h4 class="text-center fw-bold text-white">1 player</h4>
-      </label>
-    </div>
-        </div>
-        <!-- Card 2 -->
-        <div class="col">
-            <div class="d-inline-block">
-      <input type="radio" class="btn-check" name="radioOption" id="radio2" value="2" autocomplete="off">
-      <label for="radio2" class="btn btn-outline-info p-0 border-0">
-                <img src="{% static 'images/2-player.png' %}" class="card-img-top" alt="2 players">
-        <h4 class="text-center fw-bold text-white">2 players</h4>
-      </label>
-    </div>
-  </div>
-        </div>
-            <div class="d-flex justify-content-center mt-5">
-            <a href="{% url 'home' %}" class="btn btn-outline-primary mx-2">Back</a>
-            <button type="submit" class="btn btn-success mx-2">Play</button>
+<header class="text-center my-5">
+    <a href="{% url 'home' %}" class="fw-bold text-decoration-none text-uppercase text-warning h1">Choose your options</a>
+</header>
+
+<div class="container text-light">
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="row row-cols-1 row-cols-lg-2 d-flex justify-content-center">
+            <div class="col">
+                <div class="row row-cols-1 row-cols-lg-1 d-flex justify-content-center g-4">
+            <div class="col-sm d-flex justify-content-center align-items-center">
+            <h4 class="m-0">Max Players</h4>
                 </div>
-            </form>
-  </div>
+            <div class="col-3 d-flex justify-content-center align-items-center">
+                <input
+                    type="number"
+                    id="maxplayers"
+                    name="maxplayers"
+                    class="form-control form-control-lg"
+                    min="1"
+                    max="4"
+                    value="1"
+                    autocomplete="off"
+                    aria-label="Maximum Players"
+                    required
+                />
+            </div>
+            </div>
+        <div class="row my-4 row-cols-1 row-cols-lg-1 d-flex justify-content-center">
+            <div class="col-sm d-flex justify-content-center align-items-center">
+            <h4 class="m-0">Choose Your Color</h4>
+                </div>
+            <div class="col-sm d-flex justify-content-center align-items-center">
+                <div class="color-picker">
+                  <input type="radio" name="color" id="green" value="green" class="color-radio" required>
+                  <label for="green" aria-label="Select green color"></label>
+
+                  <input type="radio" name="color" id="red" value="red" class="color-radio" required>
+                  <label for="red" aria-label="Select red color"></label>
+
+                  <input type="radio" name="color" id="blue" value="blue" class="color-radio" required>
+                  <label for="blue" aria-label="Select blue color"></label>
+
+                  <input type="radio" name="color" id="yellow" value="yellow" class="color-radio" required>
+                  <label for="yellow" aria-label="Select yellow color"></label>
+
+                </div>
+                </div>
+        </div>
+            </div>
+            <div class="col">
+                <div class="row row-cols-1 row-cols-lg-1 d-flex justify-content-center g-4">
+            <div class="col-sm d-flex justify-content-center align-items-center">
+            <h4 class="m-0">Enter Your Game Room ID</h4>
+                </div>
+                    <div class="col-sm d-flex justify-content-center align-items-center text-info"><small>(Leave blank to random join)</small></div>
+            <div class="col-lg-3 col-5 d-flex justify-content-center align-items-center">
+                <input
+                  type="text"
+                  id="room_id"
+                  name="room_id"
+                  class="form-control form-control-lg"
+                  autocomplete="off"
+                  aria-label="Room ID"
+                  pattern="[a-z0-9]{6}"
+                  maxlength="6"
+                />
+            </div>
+            </div>
+        <div class="my-4 d-flex justify-content-center">
+            <button type="submit" id="join_game" name="join_game" class="btn btn-warning mx-2">Join Game</button>
+        </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-5">
+            <a href="{% url 'home' %}" class="btn btn-outline-primary mx-2">Back</a>
+            <button type="submit" name="create_new" class="btn btn-success mx-2">Create New Game</button>
+        </div>
+    </form>
+</div>
+
+<script>
+
+</script>
 {% endblock %}

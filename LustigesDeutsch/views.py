@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
+from Lobby.models import GameRoom
 
 # Create your views here
 
@@ -24,28 +25,51 @@ def home(request):
 
 
 def playervsplayer(request, game_name='vokabel'):
-    if request.user.is_authenticated:
-        if game_name in g_names:
-            p_id = request.user.id
-            p_name = request.user.first_name
-            p_photo = request.user.profile.profile_image.url
+    if not request.user.is_authenticated:
+        return redirect('user_login')
+    if game_name in g_names:
+        if request.method == 'POST':
+            chosen_color = request.POST['color']
+            request.session['chosen_color'] = chosen_color
+            create_new = request.POST.get('create_new')
+            join_game = request.POST.get('join_game')
+            if create_new is not None:
+                player_count = int(request.POST['maxplayers'])
+                request.session['max_players'] = player_count
+                if player_count > 1:
+                    return redirect('create_room', game_name=game_name)
+                else:
+                    p_id = request.user.id
+                    p_name = request.user.first_name
+                    p_photo = request.user.profile.profile_image.url
+                    players = [{'id': p_id, 'name': p_name, 'color': chosen_color, 'prev_state': 0, 'game_state': 0,
+                                'game_score': 0, 'dice_history': [], 'turn': True, 'jersey': '0', 'photo': p_photo}]
+                    request.session['players'] = players
+                    request.session['dice_number'] = 0
+                    request.session['winner'] = ''
+                    request.session['q_box'] = False
+                    return redirect(f'/{game_name}/playgame/')
 
-            if request.method == 'POST':
-                request.session['playerCount'] = int(request.POST['radioOption'])
-                colors = ['green', 'red', 'blue', 'yellow', 'orange', 'pink', 'purple']
-                players = [{'id': p_id, 'name': p_name, 'color': 'green', 'prev_state': 0, 'game_state': 0, 'game_score': 0, 'dice_history':[], 'turn': True, 'jersey': '0', 'photo': p_photo}]
-                if int(request.POST['radioOption']) == 2:
-                    players.append({'id': 12, 'name': 'Mahsa', 'color': 'red', 'prev_state': 0, 'game_state': 0, 'game_score': 0, 'dice_history':[], 'turn': False, 'jersey': '1', 'photo': '/media/profile_images/mahsa_waPAPyI.png'})
-                request.session['players'] = players
-                request.session['dice_number'] = 0
-                request.session['winner'] = ''
-                request.session['q_box'] = False
-                return redirect(f'/{game_name}/playgame/')
-            return render(request, 'playervsplayer.html')
-        else:
-            return redirect(reverse('home'))
+            if join_game is not None:
+                get_room_id = request.POST['room_id']
+                if get_room_id:
+                    try:
+                        room = GameRoom.objects.get(room_id=get_room_id, game_name=game_name, status='waiting')
+                        print(room.room_id)
+                        return redirect('join_room', room_id=room.room_id)
+                    except GameRoom.DoesNotExist:
+                        messages.warning(request, 'There is no game with this ID', extra_tags='warning')
+                else:
+                    try:
+                        room = GameRoom.objects.get(game_name=game_name, status='waiting')
+                        return redirect('join_room', room_id=room.room_id)
+                    except GameRoom.DoesNotExist:
+                        messages.warning(request, 'There is no active game', extra_tags='warning')
+
+        return render(request, 'playervsplayer.html')
     else:
-        return redirect(reverse('user_login'))
+        return redirect('home')
+
 
 
 def all_ranking(request):
