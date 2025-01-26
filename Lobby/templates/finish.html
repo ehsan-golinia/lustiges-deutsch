@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Finish{% endblock %}
+
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+    <div class="row row-cols-1 d-flex justify-content-center">
+    <div class="card text-center">
+  <div class="card-header">
+    <h2>🏆 Winner is: @{{ room.winner }}</h2>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Players Results</h5>
+    {% for pl in players %}
+                              <div class="row" id="final_results">
+                            <div class="col mx-1 d-flex justify-content-center align-items-center">
+                                <h5 class="modal-title text-{% for k,v in game_colors.items %}{% if pl.color == k %}{{ v }}{% endif %}{% endfor %}">
+                                    @{{ pl.player.username }} => {{ pl.game_score }} {% if pl.game_state == 30 %}🏆{% endif %}
+                                </h5>
+                            </div>
+                          </div>
+                          {% endfor %}
+  <form method="POST" action="">
+                      {% csrf_token %}
+      <button type="submit" name="end_game" class="btn btn-primary my-2">👋 Bye!</button>
+  </form>
+  </div>
+  <div class="card-footer text-muted">
+    see you next time 😊
+  </div>
+</div>
+
+  </div>
+  </div>
+{% endblock %}

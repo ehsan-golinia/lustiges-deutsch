@@ -3,8 +3,11 @@ from django.http import JsonResponse
 from django.urls import reverse
 from .models import SingularPlural
 from accounts.models import GamesRecords
+from Lobby.models import GameRoom, PlayerState
 from django.contrib.auth.models import User
 from django.contrib import messages
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 import random
 
 
@@ -45,7 +48,14 @@ board_data = [
     {'value': 30, 'x': 8, 'y': 6, 'special': 'END'},
 ]
 
-MIN_SCORE = 10
+MIN_SCORE = 6
+
+game_colors = {
+    'green': 'success',
+    'red': 'danger',
+    'blue': 'primary',
+    'yellow': 'warning',
+}
 
 
 def get_quiz():
@@ -63,6 +73,104 @@ def get_quiz():
     return my_rand, rand_option
 
 
+def play_game_singular_plural_multi(request, game_name='singular_plural'):
+    if request.user.is_authenticated:
+        if not request.session['winner']:
+            player_count = request.session.get('playerCount', 1)
+            players = request.session.get('players', [])
+            dice_number = request.session.get('dice_number', 0)
+            q_box = request.session.get('q_box', False)
+            rand_example = None
+            rand_option = None
+
+            if request.method == 'POST':
+
+                # Retrieve the player ID from the form data
+                end_game = request.POST.get('end_game')
+                if end_game:
+                    return redirect(reverse('home'))
+
+                next_turn = request.POST.get('next_turn')
+                print(f'Bizim = {next_turn}')
+                if next_turn is not None:
+                    request.session['q_box'] = False
+                    for player in players:
+                        player['prev_state'] = player['game_state']
+
+                        if player['turn']:
+                            player['game_score'] += int(next_turn)
+                            if len(players) > 1:
+                                player['turn'] = False
+                        else:
+                            player['turn'] = True
+
+                else:
+                    dice_number = random.randint(1, 3)
+                    request.session['dice_number'] = dice_number
+
+
+                    for player in players:
+                        player['prev_state'] = player['game_state']
+                        if player['turn']:
+                            if (player['game_state'] + dice_number) <= 30:
+                                player['game_state'] += dice_number
+                                player['dice_history'].append(dice_number)
+                                if player['game_state'] != 30:
+                                    q_box = True
+                                    rand_example, rand_option = get_quiz()
+
+                            if player['game_state'] == 30:
+                                request.session['winner'] = player['name']
+                                winner = User.objects.get(id=player['id'])
+                                GamesRecords.objects.create(
+                                    user=winner,
+                                    game_name='Singular_Plural',
+                                    score=player['game_score'])
+                                print(request.session['winner'])
+                                messages.success(request, f'{player["name"]} won the game', extra_tags='success')
+                    if request.session['winner']:
+                        for pl in players:
+                            if pl['game_score'] >= MIN_SCORE:
+                                person = User.objects.get(id=pl['id'])
+                                person.profile.total_scores += pl['game_score']
+                                person.profile.save()
+                                person.scores.singular_plural_score += pl['game_score']
+                                person.scores.save()
+
+            request.session['players'] = players
+            circle_data = []
+
+            for pl in players:
+                circle_data.append(
+                    {
+                        'value': f'p{pl['id']}',
+                        'fill': f'{pl['color']}',
+                        'px': (board_data[pl['prev_state']]['x'] * cell_size) + (cell_size / 2),
+                        'x': (board_data[pl['game_state']]['x'] * cell_size) + (cell_size / 2),
+                        'py': (board_data[pl['prev_state']]['y'] * cell_size) + (cell_size / 2),
+                        'y': (board_data[pl['game_state']]['y'] * cell_size) + (cell_size / 2)
+                    }
+                )
+
+            context = {
+                'players': players,
+                'game_name': game_name,
+                'player_count': player_count,
+                'cell_size': cell_size,
+                'board_data': board_data,
+                'circle_data': circle_data,
+                'dice_number': dice_number,
+                'q_box': q_box,
+                'rand_example': rand_example,
+                'rand_option': rand_option
+            }
+            return render(request, 'singular_plural_game.html', context=context)
+        else:
+            return redirect(reverse('home'))
+    else:
+        return redirect(reverse('user_login'))
+
+
 def play_game_singular_plural(request, game_name='singular_plural'):
     if request.user.is_authenticated:
         if not request.session['winner']:
@@ -76,7 +184,6 @@ def play_game_singular_plural(request, game_name='singular_plural'):
             if request.method == 'POST':
 
                 # Retrieve the player ID from the form data
-                player_jersey = request.POST.get('player_jersey')
                 end_game = request.POST.get('end_game')
                 if end_game:
                     return redirect(reverse('home'))

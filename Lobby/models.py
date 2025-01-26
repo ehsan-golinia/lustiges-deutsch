@@ -13,7 +13,6 @@ class GameRoom(models.Model):
     active_turn = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='current_turn')
     players = models.ManyToManyField(User, related_name='game_sessions')
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='games_won')
-    # cancelled_player = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='cancelled_games')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

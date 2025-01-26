@@ -8,14 +8,12 @@
       <div class="modal-body">
           <div class="row m-1" id="s-result-msg">
               <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Singular:</label></div>
-              <div class="col"><input type="text" id="singular_box" name="answer_box" {% if rand_option == 'plural' %}value="{{ rand_example.singular }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/>
-</div>
+              <div class="col"><input type="text" id="singular_box" name="answer_box" {% if rand_option == 'plural' %}value="{{ rand_example.singular }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/></div>
 
-              </div>
+          </div>
           <div class="row m-1" id="p-result-msg">
               <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Plural:</label></div>
-              <div class="col"><input type="text" id="plural_box" name="answer_box" {% if rand_option == 'singular' %}value="{{ rand_example.plural }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/>
-</div>
+              <div class="col"><input type="text" id="plural_box" name="answer_box" {% if rand_option == 'singular' %}value="{{ rand_example.plural }}" disabled{% endif %} class='form-control form-control-lg col-sm' autocomplete="off"/></div>
 
               </div>
       </div>

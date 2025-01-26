@@ -7,6 +7,7 @@ import secrets
 import string
 import asyncio
 import random
+from django.shortcuts import get_object_or_404
 from django.http import StreamingHttpResponse
 
 g_names = [
@@ -138,9 +139,7 @@ def cancel_room(request, room_id):
     if not request.user.is_authenticated:
         return redirect('user_login')
 
-    if (request.method == 'POST') or ('canceled_player' in request.session):
-        if 'canceled_player' in request.session:
-            del request.session['canceled_player']
+    if request.method == 'POST':
         room = GameRoom.objects.get(room_id=room_id)
         if request.user == room.player_states.filter(jersey='1').first().player:
             room.delete()
@@ -149,7 +148,30 @@ def cancel_room(request, room_id):
             room.players.remove(request.user)
 
         return redirect('home')
-    return redirect('wait_room', room_id=room_id)
+    else:
+        if GameRoom.objects.filter(room_id=room_id, status='cancelled').exists():
+            if request.user in GameRoom.objects.get(room_id=room_id, status='cancelled').players.all():
+                GameRoom.objects.filter(room_id=room_id, status='cancelled').delete()
+        return redirect('home')
+
+
+def finish_room(request, game_name, room_id):
+    if not request.user.is_authenticated:
+        return redirect('user_login')
+    if GameRoom.objects.filter(room_id=room_id, game_name=game_name, status='finished').exists():
+        if request.user in GameRoom.objects.get(room_id=room_id, game_name=game_name, status='finished').players.all():
+            if request.method == 'POST':
+                end_game = request.POST.get('end_game')
+                if end_game is not None:
+                    GameRoom.objects.filter(room_id=room_id, game_name=game_name, status='finished').delete()
+                messages.success(request, 'Game finished', extra_tags='success')
+                return redirect('home')
+            this_room = GameRoom.objects.get(room_id=room_id, game_name=game_name, status='finished')
+            players = this_room.player_states.all()
+            return render(request, 'finish.html', {'room': this_room, 'players': players, 'game_colors': game_colors})
+
+    messages.success(request, 'Game finished', extra_tags='success')
+    return redirect('home')
 
 
 def index(request):
