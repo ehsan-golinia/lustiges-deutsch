@@ -1,6 +1,6 @@
 from channels.generic.websocket import WebsocketConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import GameRoom, PlayerState
+from Lobby.models import GameRoom, PlayerState
 from Vokabel.models import Vokabel
 from accounts.models import GamesRecords, UserProfile, UserScores
 from django.contrib.auth.models import User
@@ -8,14 +8,14 @@ from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
 import json
 import random
+from LustigesDeutsch.constants import MIN_SCORE
 
-
-class VokabelGameConsumer(WebsocketConsumer):
+class ArtikelGameConsumer(WebsocketConsumer):
     def connect(self):
         self.this_user = self.scope['user']
         self.gameroom_id = self.scope['url_route']['kwargs']['gameroom_id']
-        self.game_name = self.scope['url_route']['kwargs']['game_name']
-        self.MIN_SCORE = 6
+        self.game_name = 'artikel'
+        self.MIN_SCORE = MIN_SCORE
         self.game_room = get_object_or_404(
             GameRoom, room_id=self.gameroom_id, game_name=self.game_name)
         async_to_sync(self.channel_layer.group_add)(
@@ -58,13 +58,14 @@ class VokabelGameConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         rand_q = None
+        this_artikel = None
+        this_german = None
         select_type = None
         ended_user = None
         if text_data_json['action'] == 'end_game':
             ended_user = text_data_json['username']
             select_type = 'end_game_state'
-            self.game_room.status = 'finished'
-            self.game_room.player_states.all().delete()
+            self.game_room.status = 'cancelled'
             self.game_room.save()
         elif text_data_json['action'] == 'roll_dice':
             select_type = 'roll_dice_state'
@@ -83,7 +84,7 @@ class VokabelGameConsumer(WebsocketConsumer):
                 self.game_room.save()
                 if self.game_room.player_states.get(turn=True).game_state != 30:
                     self.game_room.board_state['q_box'] = True
-                    rand_q = self.get_quiz()
+                    this_artikel, this_german, rand_q = self.get_quiz()
             else:
                 current_jersey = self.game_room.player_states.get(turn=True).jersey
                 if current_jersey == str(self.game_room.max_players):
@@ -111,13 +112,10 @@ class VokabelGameConsumer(WebsocketConsumer):
 
             if self.game_room.winner:
                 for pl in self.game_room.player_states.all():
-                    if pl.game_score >= self.MIN_SCORE:
-                        total_score = UserProfile.objects.get(user=pl.player).total_scores
-                        total_score += pl.game_score
-                        UserProfile.objects.filter(user=pl.player).update(total_scores=total_score)
-                        vok_score = UserScores.objects.get(user=pl.player).vokabel_score
-                        vok_score += pl.game_score
-                        UserScores.objects.filter(user=pl.player).update(vokabel_score=vok_score)
+                    if pl.game_score >= self.MIN_SCORE or self.game_room.winner == pl.player:
+                        art_score = UserScores.objects.get(user=pl.player).artikel_score
+                        art_score += pl.game_score
+                        UserScores.objects.filter(user=pl.player).update(artikel_score=art_score)
 
                     pl.turn = False
                 self.game_room.save()
@@ -147,12 +145,6 @@ class VokabelGameConsumer(WebsocketConsumer):
 
             self.game_room.save()
 
-        elif text_data_json['action'] == 'bye_bye':
-            ended_user = text_data_json['username']
-            if self.game_room.player_states.count() != 0:
-                self.game_room.player_states.filter(player__username=ended_user).delete()
-            self.game_room.save()
-            self.send(text_data=json.dumps({'type': 'bye_bye_state'}))
         event = {
             'type': select_type,
             'board_state': self.game_room.board_state,
@@ -161,9 +153,11 @@ class VokabelGameConsumer(WebsocketConsumer):
             'winner': self.game_room.winner.username if self.game_room.winner else '',
             'ended_user': ended_user if ended_user else '',
             'quiz': {
+                'german': rand_q.german if rand_q else '',
                 'english': rand_q.english if rand_q else '',
                 'turkish': rand_q.turkish if rand_q else '',
-                'german': rand_q.german if rand_q else ''
+                'this_artikel': this_artikel if this_artikel else '',
+                'this_german': this_german if this_german else ''
             },
             'players': [
                 {
@@ -204,4 +198,5 @@ class VokabelGameConsumer(WebsocketConsumer):
             return None, None
         rand_id = random.randint(1, len(all_exm))
         my_rand = all_exm.get(id=rand_id)
-        return my_rand
+        my_artikel = my_rand.german.split(' ')
+        return my_artikel[0], my_artikel[1], my_rand

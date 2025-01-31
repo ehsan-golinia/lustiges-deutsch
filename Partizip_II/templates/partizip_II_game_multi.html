@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ game_name | title }} Game{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
+            <div class="col">
+
+                    {% include 'board.html' %}
+
+            </div>
+            <div class="col">
+                <div id="names_place" class="row text-warning">
+
+                </div>
+                <div class="row">
+
+                <div class="col">
+                    <div class="dice img-fluid bg-white p-2 d-flex justify-content-center mx-5">
+                        <img id="dice_img" src="" alt="Dice" width="60px">
+                    </div>
+                </div>
+
+                </div>
+            <div class="row">
+
+                <hr>
+                <hr>
+                <hr>
+                <hr>
+                </div>
+            <div id="players_score" class="row mx-5">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="" method="POST">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center mt-5">
+                <button type="button"
+                            id="end_game"
+                            name="end_game"
+                            class="btn btn-outline-danger mx-2"
+                            value="{{ user.username }}"
+                            disabled>End Game</button>
+                <div id="hiddenData" data-value="" style="display: none;" hidden="true"></div>
+                <button type="button" id="roll_dice" class="btn btn-warning mx-2" disabled>
+                    Roll Dice</button>
+            </div>
+    </form>
+            {% include 'verb_modals_multi.html' %}
+
+    <script>
+    // Define the exact positions of the cells in the board layout
+    const cell_size = {{ cell_size|safe }};
+    const board_data = {{ board_data|safe }};
+
+
+
+  // Create the SVG board
+  const svg = d3.select('#board');
+
+  // Draw cells
+  svg.selectAll('.cell')
+    .data(board_data)
+    .enter()
+    .append('rect')
+    .attr('class', (d) => `cell ${d.special}`)
+    .attr('x', (d) => d.x * cell_size)
+    .attr('y', (d) => d.y * cell_size)
+    .attr('width', cell_size)
+    .attr('height', cell_size);
+
+
+
+  // Add text labels
+  svg.selectAll('text')
+    .data(board_data)
+    .enter()
+    .append('text').attr('class', 'sp-text')
+    .attr('x', (d) => d.x * cell_size + cell_size / 2)
+    .attr('y', (d) => d.y * cell_size + cell_size / 2)
+    .text((d) => d.special)
+    .style('pointer-events', 'none') // Prevent text from blocking clicks
+    .style('font-size', '14px')
+    .style('fill', '#385170');
+
+</script>
+
+    <script>
+        let myModal;
+        document.addEventListener('DOMContentLoaded', function () {
+            myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+        });
+        // WebSocket setup
+        const roomId = "{{ room_id }}";
+        const gameName = "{{ game_name }}";
+        const wsUrl = `ws://${window.location.host}/ws/${gameName}/${roomId}/`;
+        let socket;
+
+        // Initialize WebSocket connection
+        function initializeWebSocket() {
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = function () {
+                console.log('WebSocket connection established');
+            };
+
+            socket.onmessage = handleSocketMessage;
+
+            socket.onclose = function (event) {
+                console.warn('WebSocket connection closed:', event.reason || 'Unknown reason');
+                attemptReconnect(); // Attempt to reconnect on disconnection
+            };
+
+            socket.onerror = function (error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        // Handle incoming WebSocket messages
+        function handleSocketMessage(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log(data);
+
+                if (data) {
+                    updateGameStateUI(data);
+                } else {
+                    console.warn('Unhandled WebSocket action:', data.action);
+                }
+
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        }
+
+        // Attempt to reconnect WebSocket
+        function attemptReconnect() {
+            setTimeout(() => {
+                console.log('Attempting to reconnect WebSocket...');
+                initializeWebSocket();
+            }, 5000); // Retry after 5 seconds
+        }
+
+        // Send dice roll action to server
+        function rollDice() {
+            const diceValue = Math.floor(Math.random() * {{ MAX_DICE }}) + 1;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    'action': 'roll_dice',
+                    'dice_value': diceValue
+                }));
+            } else {
+                console.error('WebSocket is not open. Dice roll cannot be sent.');
+            }
+        }
+        function nextTurn(score) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    'action': 'next_turn',
+                    'score': score
+                }));
+            } else {
+                console.error('WebSocket is not open. Dice roll cannot be sent.');
+            }
+        }
+
+        // Update the UI with the new game state
+        function updateGameStateUI(data) {
+            if (data.type === 'bye_bye_state') {
+                window.location.href = `/lobby/cancel/{{ room_id }}`;
+            }
+            if (data.type === 'end_game_state') {
+                alert(`@${data.ended_user} has ended the game!`);
+                window.location.href = `/lobby/cancel/{{ room_id }}`;
+            }
+            if (data.game_status === 'finished') {
+                setTimeout(() => {
+                    window.location.href = `/lobby/finish/{{ game_name }}/{{ room_id }}`;
+                }, 2000);
+            }
+            updateDiceButton(data.active_turn);
+            updatePlayerScore(data.players);
+            updateDiceImage(data.board_state.dice_number);
+            updatePlayerPositions(data.players);
+            if (data.board_state.q_box) {
+                updateQBox(data.active_turn, data.quiz);
+            }
+            if (data.game_status === 'playing') {
+                toggleQBox(data.board_state.q_box, data.active_turn, myModal);
+            }
+        }
+
+        // Initialize WebSocket connection on page load
+        document.addEventListener('DOMContentLoaded', initializeWebSocket);
+    </script>
+
+
+    <script>
+
+        roll_dice_button = document.getElementById('roll_dice');
+        end_game_button = document.getElementById('end_game');
+        roll_dice_button.addEventListener("click", () => {
+            rollDice();
+        });
+        function updateDiceImage(dice_number) {
+            const dice_img = document.getElementById('dice_img');
+            dice_img.src = `{% static 'images/dice/dice-' %}${dice_number}.png`;
+        }
+        function updateDiceButton(a_turn) {
+            roll_dice_button.disabled = '{{ user.username|safe }}' !== a_turn;
+            end_game_button.disabled = '{{ user.username|safe }}' !== a_turn;
+        }
+        function updatePlayerScore(players) {
+            const game_colors = {
+                'green': 'success',
+                'red': 'danger',
+                'blue': 'primary',
+                'yellow': 'warning',
+            };
+
+            let html1 = '';
+            let html2 = '';
+            for (const pl of players) {
+                html1 += `
+                    <div class="row text-${game_colors[pl.color]} my-2">
+                        <h4>
+                            ${pl.first_name}
+                            <i class="fa-solid fa-circle-right fa-2xs" style="color: #63E6BE;"></i>
+                            <span>${pl.dice_history}</span>
+                        </h4>
+                    </div>`;
+
+                html2 += `
+                    <div class="col text-center text-${game_colors[pl.color]}">
+                        <h4>
+                            ${pl.turn ? `<img
+                                src="${pl.profile_image}"
+                                alt="Profile Picture"
+                                class="rounded-circle"
+                                style="width: 30px; height: 30px; object-fit: cover; margin-right: 8px;">` : ''}
+                            ${pl.first_name}
+                        </h4>
+                        <h2>${pl.game_score}</h2>
+                    </div>`;
+            }
+
+            // Set the accumulated HTML to the element
+            document.getElementById('players_score').innerHTML = html1;
+            document.getElementById('names_place').innerHTML = html2;
+        }
+        function updateQBox(a_turn, quiz) {
+            if ('{{ user.username|safe }}' === a_turn) {
+                let html1 = `
+                    <div class="row">
+              <div class="row">
+                <h5>🇺🇸 ${quiz.english }</h5>
+                  </div>
+              <div class="row">
+            <h5>🇹🇷 ${quiz.turkish }</h5>
+                  </div>
+            <div class="row">
+            <h5>🇩🇪 ${quiz.infinitiv }</h5>
+                  </div>
+          </div>
+                    `;
+                document.getElementById('result-place').innerHTML = html1;
+                document.getElementById('hiddenData').dataset.value = btoa(quiz.partizip_II);
+            }
+
+        }
+        function toggleQBox(q_box, a_turn, myModal) {
+            if (q_box) {
+                if ('{{ user.username|safe }}' === a_turn) {
+                    setTimeout(() => myModal.show(), 3000);
+                }
+            }
+            else {
+                myModal.hide();
+            }
+
+        }
+        function updatePlayerPositions(players) {
+            const circle_data = players.map(pl => ({
+                value: `p${pl.id}`,
+                fill: pl.color,
+                px: (board_data[pl.prev_state].x * cell_size) + (cell_size / 2),
+                x: (board_data[pl.game_state].x * cell_size) + (cell_size / 2),
+                py: (board_data[pl.prev_state].y * cell_size) + (cell_size / 2),
+                y: (board_data[pl.game_state].y * cell_size) + (cell_size / 2)
+            }));
+            // Add player circle
+            const player = svg.selectAll('circle')
+            .data(circle_data)
+            .join(
+                enter => enter.append('circle')
+                .attr('r', 20)
+                .style('fill', d => d.fill).style('opacity', 0.6)
+                .style('stroke', 'black')
+                .attr('cx', d => d.px)
+                .attr('cy', d => d.py),
+                update => update
+            );
+
+
+            player.transition()
+            .duration(1000) // 1-second animation
+            .ease(d3.easeCubicInOut)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+        }
+
+        document.getElementById('end_game').addEventListener('click', function (e) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        'action': 'end_game',
+                        'username': '{{ user.username|safe }}'
+                    }));
+                }
+            });
+
+    </script>
+
+{% endblock %}

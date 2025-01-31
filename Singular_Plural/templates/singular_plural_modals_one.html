@@ -28,19 +28,14 @@
 <script>
     // Pass players data to JavaScript
     let score = 0;
-    const s_encodedValue = document.getElementById('sHiddenData').dataset.value;
-    const s_get_answer = atob(btoa(s_encodedValue));
-    const p_encodedValue = document.getElementById('pHiddenData').dataset.value;
-    const p_get_answer = atob(btoa(p_encodedValue));
     document.querySelector('button[name="answer"]').addEventListener('click', function(e) {
     // Prevent any default form submission
     e.preventDefault();
 
     const singular_answer = document.getElementById('singular_box').value;
     const plural_answer = document.getElementById('plural_box').value;
-    console.log(singular_answer, plural_answer);
     if (singular_answer !== '' && plural_answer !== '') {
-        if (singular_answer === s_get_answer && plural_answer === p_get_answer) {
+        if (singular_answer === '{{ rand_example.singular }}' && plural_answer === '{{ rand_example.plural }}') {
             score = 1;
             const s_result_msg = document.getElementById('s-result-msg');
             s_result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title"><span class="text-warning">Singular:</span> {{ rand_example.singular }}</h4></div>`;

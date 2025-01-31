@@ -12,3 +12,6 @@ class Vokabel(models.Model):
     def __str__(self):
         return f'#{self.id} - {self.german} - {self.english}'
 
+    class Meta:
+        verbose_name = "Vokabel"
+        verbose_name_plural = "Vokabel"

@@ -9,21 +9,7 @@ import asyncio
 import random
 from django.shortcuts import get_object_or_404
 from django.http import StreamingHttpResponse
-
-g_names = [
-    'vokabel',
-    'singular_plural',
-    'artikel',
-    'adjektiv',
-    'partizip_II'
-]
-
-game_colors = {
-    'green': 'success',
-    'red': 'danger',
-    'blue': 'primary',
-    'yellow': 'warning',
-}
+from LustigesDeutsch.constants import game_colors, g_names
 
 
 def generate_random_id(length=6):
@@ -116,9 +102,12 @@ def check_status(request, room_id):
         return redirect('user_login')
     try:
         room = GameRoom.objects.get(room_id=room_id)
-        pl_user = [player.username for player in room.players.all()]
-        pl_color = [player.color for player in room.player_states.all()]
-        players = list(zip(pl_user, pl_color))
+        players = []
+        for pl in room.player_states.all():
+            players.append({
+                'username': pl.player.username,
+                'color': pl.color
+            })
 
         data = {
             'status': room.status,

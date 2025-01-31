@@ -1,0 +1,93 @@
+<div class="modal bg-dark fade" id="exampleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div id="modal_content" class="modal-content">
+      <div class="modal-header" id="result-place">
+
+      </div>
+      <div class="modal-body">
+          <div class="row m-1" id="s-result-msg">
+              <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Singular:</label></div>
+              <div class="col"><input type="text" id="singular_box" name="answer_box" value="" class='form-control form-control-lg col-sm' autocomplete="off"/></div>
+
+          </div>
+          <div class="row m-1" id="p-result-msg">
+              <div class="col-2 mx-1 d-flex justify-content-center align-items-center"><label for="answer_box" class="text-warning h6">Plural:</label></div>
+              <div class="col"><input type="text" id="plural_box" name="answer_box" value="" class='form-control form-control-lg col-sm' autocomplete="off"/></div>
+
+              </div>
+          <div class="row" id="result-msg-s" hidden="hidden">
+              <div class="col mx-1 d-flex justify-content-center align-items-center"><h4 id="singular_answer" class="modal-title"></h4></div>
+          </div>
+          <div class="row" id="result-msg-p" hidden="hidden">
+              <div class="col mx-1 d-flex justify-content-center align-items-center"><h4 id="plural_answer" class="modal-title"></h4></div>
+          </div>
+
+      </div>
+      <div class="modal-footer" id="button-place">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" id="do_submit" class="btn btn-primary" name="answer">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    let my_button = document.querySelector('button[name="answer"]');
+    // Pass players data to JavaScript
+    my_button.addEventListener('click', function(e) {
+        let score = 0;
+        const client_singular = document.getElementById('singular_box').value;
+        const client_plural = document.getElementById('plural_box').value;
+        if (client_singular !== '' && client_plural !== '') {
+            var get_singular = atob(document.getElementById('sHiddenData').dataset.value);
+            var get_plural = atob(document.getElementById('pHiddenData').dataset.value);
+            e.preventDefault();
+            if (client_singular === get_singular && client_plural === get_plural) {
+                score = 1;
+                const result_place = document.getElementById('result-place');
+                result_place.innerHTML = `<h5 class="modal-title text-success">✅ Correct Answer</h5><h5 class="modal-title text-success">+1 point</h5>`;
+            } else {
+                const result_place = document.getElementById('result-place');
+                result_place.innerHTML = `<h5 class="modal-title text-danger">❌ Wrong Answer</h5><h5 class="modal-title text-danger">0 point</h5>`;
+            }
+            document.getElementById('s-result-msg').hidden = true;
+            document.getElementById('p-result-msg').hidden = true;
+            document.getElementById('result-msg-s').hidden = false;
+            document.getElementById('result-msg-p').hidden = false;
+            document.getElementById('singular_box').value = "";
+            document.getElementById('plural_box').value = "";
+            document.getElementById('singular_answer').textContent = "🇩🇪 " + get_singular;
+            document.getElementById('plural_answer').textContent = "🇩🇪 " + get_plural;
+
+            my_button.id = 'next_turn';
+            my_button.value = score;
+            my_button.className = 'btn btn-success';
+            my_button.textContent = 'Continue';
+
+            my_button.addEventListener('click', function handleNextTurn(e) {
+                e.preventDefault();
+
+                // Reset the button back to "Submit"
+                my_button.id = 'do_submit';
+                my_button.name = 'answer';
+                my_button.value = '';
+                my_button.className = 'btn btn-primary';
+                my_button.textContent = 'Submit';
+
+                // Call the nextTurn function with the current score
+                document.getElementById('s-result-msg').hidden = false;
+                document.getElementById('p-result-msg').hidden = false;
+                document.getElementById('result-msg-s').hidden = true;
+                document.getElementById('result-msg-p').hidden = true;
+                document.getElementById('singular_box').disabled = false;
+                document.getElementById('plural_box').disabled = false;
+                nextTurn(score);
+
+                // Remove this event listener to prevent it from being triggered again
+                my_button.removeEventListener('click', handleNextTurn);
+            }, {once: true});
+        }
+    });
+
+
+</script>

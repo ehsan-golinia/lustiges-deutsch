@@ -28,8 +28,11 @@ class UserScoresAdmin(admin.ModelAdmin):
     list_display = ('id', 'user',
                     'vokabel_score',
                     'singular_plural_score',
-                    'artikel_score')  # Specify the fields you want as columns
-    search_fields = ('user', 'vokabel_score', 'singular_plural_score', 'artikel_score')       # Add a search bar for these fields
+                    'artikel_score',
+                    'verb_score',
+                    'adjektiv_score',
+                    'partizip_II_score')  # Specify the fields you want as columns
+    search_fields = ('user',)       # Add a search bar for these fields
     ordering = ('id',)                                    # Order by id
 
 

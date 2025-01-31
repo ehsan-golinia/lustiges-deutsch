@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
 from Lobby.models import GameRoom
+from .constants import g_names
 
 # Create your views here
 
@@ -9,15 +10,6 @@ from Lobby.models import GameRoom
 def custom_page_not_found(request, exception):
     """Custom 404 view that redirects to the homepage."""
     return redirect('/')
-
-
-g_names = [
-    'vokabel',
-    'singular_plural',
-    'artikel',
-    'adjektiv',
-    'partizip_II'
-]
 
 
 def home(request):

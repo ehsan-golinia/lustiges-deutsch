@@ -24,6 +24,8 @@
             <li><hr class="dropdown-divider"></li>
                 {% if user.is_superuser %}
                     <li><a class="dropdown-item" href="{% url 'Vokabel:add_vokabel' %}"><i class="fa-solid fa-plus"></i> Add Vokabel</a></li>
+                    <li><a class="dropdown-item" href="{% url 'Verb:add_verb' %}"><i class="fa-solid fa-plus"></i> Add Verb</a></li>
+                    <li><a class="dropdown-item" href="{% url 'Adjektiv:add_adjektiv' %}"><i class="fa-solid fa-plus"></i> Add Adjektiv</a></li>
                 <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fa-solid fa-lock"></i> Admin</a></li>
                 {% endif %}

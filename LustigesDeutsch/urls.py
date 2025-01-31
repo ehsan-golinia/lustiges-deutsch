@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls import handler404
 from django.conf.urls.static import static
 
+
 handler404 = 'LustigesDeutsch.views.custom_page_not_found'
 
 
@@ -34,6 +35,9 @@ urlpatterns = [
     path('vokabel/', include('Vokabel.urls')),
     path('singular_plural/', include('Singular_Plural.urls')),
     path('artikel/', include('Artikel.urls')),
+    path('verb/', include('Verb.urls')),
+    path('partizip_II/', include('Partizip_II.urls')),
+    path('adjektiv/', include('Adjektiv.urls')),
 ]
 
 if settings.DEBUG:

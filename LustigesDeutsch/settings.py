@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'Vokabel.apps.VokabelConfig',
     'Singular_Plural.apps.SingularPluralConfig',
     'Artikel.apps.ArtikelConfig',
+    'Verb.apps.VerbConfig',
+    'Partizip_II.apps.PartizipIiConfig',
+    'Adjektiv.apps.AdjektivConfig',
 ]
 
 MIDDLEWARE = [

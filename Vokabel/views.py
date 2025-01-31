@@ -3,66 +3,23 @@ from django.http import JsonResponse
 from django.urls import reverse
 from .models import Vokabel
 from Singular_Plural.models import SingularPlural
-from accounts.models import GamesRecords
+from accounts.models import GamesRecords, UserScores
 from Lobby.models import GameRoom, PlayerState
 from django.contrib.auth.models import User
 from django.contrib import messages
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from LustigesDeutsch.constants import MIN_SCORE, MAX_DICE, game_colors, cell_size, board_data
 import random
 
 
 # Create your views here.
 
-cell_size = 52
-board_data = [
-    {'value': 0, 'x': 2, 'y': 6, 'special': 'START'},
-    {'value': 1, 'x': 2, 'y': 5, 'special': '1'},
-    {'value': 2, 'x': 2, 'y': 4, 'special': '2'},
-    {'value': 3, 'x': 2, 'y': 3, 'special': '3'},
-    {'value': 4, 'x': 2, 'y': 2, 'special': '4'},
-    {'value': 5, 'x': 2, 'y': 1, 'special': '5'},
-    {'value': 6, 'x': 2, 'y': 0, 'special': '6'},
-    {'value': 7, 'x': 3, 'y': 0, 'special': '7'},
-    {'value': 8, 'x': 4, 'y': 0, 'special': '8'},
-    {'value': 9, 'x': 4, 'y': 1, 'special': '9'},
-    {'value': 10, 'x': 4, 'y': 2, 'special': '10'},
-    {'value': 11, 'x': 4, 'y': 3, 'special': '11'},
-    {'value': 12, 'x': 4, 'y': 4, 'special': '12'},
-    {'value': 13, 'x': 4, 'y': 5, 'special': '13'},
-    {'value': 14, 'x': 4, 'y': 6, 'special': '14'},
-    {'value': 15, 'x': 5, 'y': 6, 'special': '15'},
-    {'value': 16, 'x': 6, 'y': 6, 'special': '16'},
-    {'value': 17, 'x': 6, 'y': 5, 'special': '17'},
-    {'value': 18, 'x': 6, 'y': 4, 'special': '18'},
-    {'value': 19, 'x': 6, 'y': 3, 'special': '19'},
-    {'value': 20, 'x': 6, 'y': 2, 'special': '20'},
-    {'value': 21, 'x': 6, 'y': 1, 'special': '21'},
-    {'value': 22, 'x': 6, 'y': 0, 'special': '22'},
-    {'value': 23, 'x': 7, 'y': 0, 'special': '23'},
-    {'value': 24, 'x': 8, 'y': 0, 'special': '24'},
-    {'value': 25, 'x': 8, 'y': 1, 'special': '25'},
-    {'value': 26, 'x': 8, 'y': 2, 'special': '26'},
-    {'value': 27, 'x': 8, 'y': 3, 'special': '27'},
-    {'value': 28, 'x': 8, 'y': 4, 'special': '28'},
-    {'value': 29, 'x': 8, 'y': 5, 'special': '29'},
-    {'value': 30, 'x': 8, 'y': 6, 'special': 'END'},
-]
-
-MIN_SCORE = 6
-
-game_colors = {
-    'green': 'success',
-    'red': 'danger',
-    'blue': 'primary',
-    'yellow': 'warning',
-}
-
 
 def get_quiz():
     all_exm = Vokabel.objects.all()
     if not all_exm.exists():
-        return None, None
+        return None
     rand_id = random.randint(1, len(all_exm))
     my_rand = all_exm.get(id=rand_id)
     return my_rand
@@ -91,7 +48,8 @@ def play_game_vokabel_multi(request, game_name='vokabel', room_id=None):
             'board_data': board_data,
             'room_id': room.room_id,
             'game_name': room.game_name,
-            'game_colors': game_colors
+            'game_colors': game_colors,
+            'MAX_DICE': MAX_DICE
         }
         return render(request, 'vokabel_game_multi.html', context=context)
     else:
@@ -99,7 +57,7 @@ def play_game_vokabel_multi(request, game_name='vokabel', room_id=None):
         return redirect('home')
 
 
-def play_game_vokabel(request, game_name='vokabel'):
+def play_game_vokabel_one(request, game_name='vokabel'):
     if request.user.is_authenticated:
         if not request.session['players']:
             return redirect(reverse('home'))
@@ -133,7 +91,7 @@ def play_game_vokabel(request, game_name='vokabel'):
                             player['turn'] = True
 
                 else:
-                    dice_number = random.randint(1, 3)
+                    dice_number = random.randint(1, MAX_DICE)
                     request.session['dice_number'] = dice_number
 
                     for player in players:
@@ -159,10 +117,9 @@ def play_game_vokabel(request, game_name='vokabel'):
                         for pl in players:
                             if pl['game_score'] >= MIN_SCORE:
                                 person = User.objects.get(id=pl['id'])
-                                person.profile.total_scores += pl['game_score']
-                                person.profile.save()
-                                person.scores.vokabel_score += pl['game_score']
-                                person.scores.save()
+                                vok_score = UserScores.objects.get(user=person).vokabel_score
+                                vok_score += pl['game_score']
+                                UserScores.objects.filter(user=person).update(vokabel_score=vok_score)
 
             request.session['players'] = players
             circle_data = []
@@ -201,22 +158,23 @@ def play_game_vokabel(request, game_name='vokabel'):
 
 def add_vokabel(request):
     if request.user.is_superuser:
-        my_german = "Der Eingang"
+        my_german = "Die Disziplin"
         is_exist = Vokabel.objects.filter(german=my_german).exists()
         if not is_exist:
             vokabel = Vokabel.objects.create(
                 german=my_german,
-                english="the entrance",
-                turkish="giriş"
+                english="the discipline",
+                turkish="disiplin"
             )
             SingularPlural.objects.create(
-                singular="Der Eingang",
-                plural="Die Eingänge",
+                singular=my_german,
+                plural="Die Disziplinen",
                 vokabel=vokabel
             )
             messages.success(request, 'Vokabel added successfully', extra_tags='success')
         else:
-            messages.error(request, 'Vokabel already exists', extra_tags='error')
+            messages.warning(request, 'Vokabel already exists', extra_tags='warning')
         return redirect(reverse('home'))
     else:
-        return redirect(reverse('user_login'))
+        messages.warning(request, 'You are not admin!', extra_tags='warning')
+        return redirect(reverse('home'))

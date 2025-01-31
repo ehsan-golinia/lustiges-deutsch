@@ -8,14 +8,14 @@ from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
 import json
 import random
-
+from LustigesDeutsch.constants import MIN_SCORE
 
 class VokabelGameConsumer(WebsocketConsumer):
     def connect(self):
         self.this_user = self.scope['user']
         self.gameroom_id = self.scope['url_route']['kwargs']['gameroom_id']
         self.game_name = 'vokabel'
-        self.MIN_SCORE = 6
+        self.MIN_SCORE = MIN_SCORE
         self.game_room = get_object_or_404(
             GameRoom, room_id=self.gameroom_id, game_name=self.game_name)
         async_to_sync(self.channel_layer.group_add)(
@@ -110,10 +110,7 @@ class VokabelGameConsumer(WebsocketConsumer):
 
             if self.game_room.winner:
                 for pl in self.game_room.player_states.all():
-                    if pl.game_score >= self.MIN_SCORE:
-                        total_score = UserProfile.objects.get(user=pl.player).total_scores
-                        total_score += pl.game_score
-                        UserProfile.objects.filter(user=pl.player).update(total_scores=total_score)
+                    if pl.game_score >= self.MIN_SCORE or self.game_room.winner == pl.player:
                         vok_score = UserScores.objects.get(user=pl.player).vokabel_score
                         vok_score += pl.game_score
                         UserScores.objects.filter(user=pl.player).update(vokabel_score=vok_score)
@@ -194,7 +191,7 @@ class VokabelGameConsumer(WebsocketConsumer):
     def get_quiz(self):
         all_exm = Vokabel.objects.all()
         if not all_exm.exists():
-            return None, None
+            return None
         rand_id = random.randint(1, len(all_exm))
         my_rand = all_exm.get(id=rand_id)
         return my_rand

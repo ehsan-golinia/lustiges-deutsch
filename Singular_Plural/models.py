@@ -12,3 +12,7 @@ class SingularPlural(models.Model):
 
     def __str__(self):
         return f'Singular: {self.singular}, Plural: {self.plural}'
+
+    class Meta:
+        verbose_name = "Singular/Plural"
+        verbose_name_plural = "Singular/Plural"

@@ -23,8 +23,6 @@
 <script>
     // Pass players data to JavaScript
     let score = 0;
-    {#const encodedValue = document.getElementById('HiddenData').dataset.value;#}
-    {#const get_answer = atob(encodedValue);#}
     document.querySelector('button[name="answer"]').addEventListener('click', function(e) {
     // Prevent any default form submission
     e.preventDefault();

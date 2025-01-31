@@ -18,6 +18,10 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} --> {self.total_scores}"
 
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
 
 class UserScores(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='scores')
@@ -34,6 +38,10 @@ class UserScores(models.Model):
     def __str__(self):
         return f"{self.user.username}"
 
+    class Meta:
+        verbose_name = "User Score"
+        verbose_name_plural = "User Scores"
+
 
 class GamesRecords(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
@@ -44,4 +52,11 @@ class GamesRecords(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.score} - {self.date}'
+
+    class Meta:
+        verbose_name = "Games Records"
+        verbose_name_plural = "Games Records"
+
+
+# Signal to Update Total Scores in UserProfile
 

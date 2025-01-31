@@ -18,6 +18,10 @@ class GameRoom(models.Model):
     def __str__(self):
         return f'{self.game_name}, {self.status}'
 
+    class Meta:
+        verbose_name = "Game Room"
+        verbose_name_plural = "Game Rooms"
+
 
 class PlayerState(models.Model):
     player = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -32,3 +36,7 @@ class PlayerState(models.Model):
 
     def __str__(self):
         return f'{self.player.username} in room {self.game_room.room_id}'
+
+    class Meta:
+        verbose_name = "Player State"
+        verbose_name_plural = "Player States"

@@ -116,8 +116,8 @@ function checkGameStatus() {
             roomPlayersElement.innerHTML = '';
             data.players.forEach(player => {
                 const playerCell = document.createElement('th');
-                playerCell.className = 'col bg-' + game_colors[player[1]];
-                playerCell.textContent = player[0];
+                playerCell.className = 'col bg-' + game_colors[player.color];
+                playerCell.textContent = player.username;
                 roomPlayersElement.appendChild(playerCell);
             });
         })

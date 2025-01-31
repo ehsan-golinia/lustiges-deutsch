@@ -2,50 +2,17 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
 from Vokabel.models import Vokabel
-from accounts.models import GamesRecords
+from Singular_Plural.models import SingularPlural
+from accounts.models import GamesRecords, UserScores
+from Lobby.models import GameRoom, PlayerState
 from django.contrib.auth.models import User
 from django.contrib import messages
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from LustigesDeutsch.constants import MIN_SCORE, MAX_DICE, game_colors, cell_size, board_data
 import random
 
-
 # Create your views here.
-
-cell_size = 52
-board_data = [
-    {'value': 0, 'x': 2, 'y': 6, 'special': 'START'},
-    {'value': 1, 'x': 2, 'y': 5, 'special': '1'},
-    {'value': 2, 'x': 2, 'y': 4, 'special': '2'},
-    {'value': 3, 'x': 2, 'y': 3, 'special': '3'},
-    {'value': 4, 'x': 2, 'y': 2, 'special': '4'},
-    {'value': 5, 'x': 2, 'y': 1, 'special': '5'},
-    {'value': 6, 'x': 2, 'y': 0, 'special': '6'},
-    {'value': 7, 'x': 3, 'y': 0, 'special': '7'},
-    {'value': 8, 'x': 4, 'y': 0, 'special': '8'},
-    {'value': 9, 'x': 4, 'y': 1, 'special': '9'},
-    {'value': 10, 'x': 4, 'y': 2, 'special': '10'},
-    {'value': 11, 'x': 4, 'y': 3, 'special': '11'},
-    {'value': 12, 'x': 4, 'y': 4, 'special': '12'},
-    {'value': 13, 'x': 4, 'y': 5, 'special': '13'},
-    {'value': 14, 'x': 4, 'y': 6, 'special': '14'},
-    {'value': 15, 'x': 5, 'y': 6, 'special': '15'},
-    {'value': 16, 'x': 6, 'y': 6, 'special': '16'},
-    {'value': 17, 'x': 6, 'y': 5, 'special': '17'},
-    {'value': 18, 'x': 6, 'y': 4, 'special': '18'},
-    {'value': 19, 'x': 6, 'y': 3, 'special': '19'},
-    {'value': 20, 'x': 6, 'y': 2, 'special': '20'},
-    {'value': 21, 'x': 6, 'y': 1, 'special': '21'},
-    {'value': 22, 'x': 6, 'y': 0, 'special': '22'},
-    {'value': 23, 'x': 7, 'y': 0, 'special': '23'},
-    {'value': 24, 'x': 8, 'y': 0, 'special': '24'},
-    {'value': 25, 'x': 8, 'y': 1, 'special': '25'},
-    {'value': 26, 'x': 8, 'y': 2, 'special': '26'},
-    {'value': 27, 'x': 8, 'y': 3, 'special': '27'},
-    {'value': 28, 'x': 8, 'y': 4, 'special': '28'},
-    {'value': 29, 'x': 8, 'y': 5, 'special': '29'},
-    {'value': 30, 'x': 8, 'y': 6, 'special': 'END'},
-]
-
-MIN_SCORE = 10
 
 
 def get_quiz():
@@ -55,10 +22,42 @@ def get_quiz():
     rand_id = random.randint(1, len(all_exm))
     my_rand = all_exm.get(id=rand_id)
     my_artikel = my_rand.german.split(' ')
-    return my_rand, my_artikel
+    return my_artikel[0], my_artikel[1], my_rand
 
 
-def play_game_artikel(request, game_name='artikel'):
+def play_game_artikel_multi(request, game_name='artikel', room_id=None):
+
+    if not request.user.is_authenticated:
+        messages.warning(request, 'You are not logged in.', extra_tags='warning')
+        return redirect(reverse('user_login'))
+
+    try:
+        room = GameRoom.objects.get(room_id=room_id, game_name=game_name)
+    except GameRoom.DoesNotExist:
+        messages.warning(request, 'Room not found.', extra_tags='warning')
+        return redirect('home')
+
+    if request.user not in room.players.all():
+        messages.error(request, 'You are not a member of this room.', extra_tags='error')
+        return redirect('home')
+
+    if not room.winner and room.status == 'playing':
+
+        context = {
+            'cell_size': cell_size,
+            'board_data': board_data,
+            'room_id': room.room_id,
+            'game_name': room.game_name,
+            'game_colors': game_colors,
+            'MAX_DICE': MAX_DICE
+        }
+        return render(request, 'artikel_game_multi.html', context=context)
+    else:
+        messages.warning(request, 'Game is over.', extra_tags='warning')
+        return redirect('home')
+
+
+def play_game_artikel_one(request, game_name='artikel'):
     if request.user.is_authenticated:
         if not request.session['winner']:
             player_count = request.session.get('playerCount', 1)
@@ -66,18 +65,17 @@ def play_game_artikel(request, game_name='artikel'):
             dice_number = request.session.get('dice_number', 0)
             q_box = request.session.get('q_box', False)
             rand_example = None
-            my_artikel = [None, None]
+            my_artikel = None
+            my_german = None
 
             if request.method == 'POST':
 
                 # Retrieve the player ID from the form data
-                player_jersey = request.POST.get('player_jersey')
                 end_game = request.POST.get('end_game')
                 if end_game:
                     return redirect(reverse('home'))
 
                 next_turn = request.POST.get('next_turn')
-                print(f'Bizim = {next_turn}')
                 if next_turn is not None:
                     request.session['q_box'] = False
                     for player in players:
@@ -102,7 +100,7 @@ def play_game_artikel(request, game_name='artikel'):
                                 player['dice_history'].append(dice_number)
                                 if player['game_state'] != 30:
                                     q_box = True
-                                    rand_example, my_artikel = get_quiz()
+                                    my_artikel, my_german, rand_example = get_quiz()
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
@@ -111,16 +109,14 @@ def play_game_artikel(request, game_name='artikel'):
                                     user=winner,
                                     game_name='Artikel',
                                     score=player['game_score'])
-                                print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
                     if request.session['winner']:
                         for pl in players:
                             if pl['game_score'] >= MIN_SCORE:
                                 person = User.objects.get(id=pl['id'])
-                                person.profile.total_scores += pl['game_score']
-                                person.profile.save()
-                                person.scores.artikel_score += pl['game_score']
-                                person.scores.save()
+                                art_score = UserScores.objects.get(user=person).artikel_score
+                                art_score += pl['game_score']
+                                UserScores.objects.filter(user=person).update(artikel_score=art_score)
 
             request.session['players'] = players
             circle_data = []
@@ -146,11 +142,12 @@ def play_game_artikel(request, game_name='artikel'):
                 'circle_data': circle_data,
                 'dice_number': dice_number,
                 'q_box': q_box,
+                'game_colors': game_colors,
+                'artikel': my_artikel,
+                'german': my_german,
                 'rand_example': rand_example,
-                'artikel': my_artikel[0],
-                'vokabel': my_artikel[1]
             }
-            return render(request, 'artikel_game.html', context=context)
+            return render(request, 'artikel_game_one.html', context=context)
         else:
             return redirect(reverse('home'))
     else:

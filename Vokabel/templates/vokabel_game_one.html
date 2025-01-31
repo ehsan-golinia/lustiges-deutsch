@@ -59,7 +59,6 @@
                             class="btn btn-outline-danger mx-2"
                             value="{{ user.username }}"
                             onclick="return confirmEndGame()">End Game</button>
-                <div id="hiddenData" data-value="" style="display: none;" hidden="hidden"></div>
                 <button type="submit" name="player_jersey" class="btn btn-warning mx-2"
                         value="{% for pl in players %}{% if pl.turn %}{{ pl.jersey }}{% endif %}{% endfor %}">
                     Roll Dice</button>
@@ -150,11 +149,6 @@
                 document.getElementById("j{{ p.jersey }}").innerHTML += "{{ p.dice_history|join:', ' }}";
             {% endfor %}
         }
-    </script>
-
-    <script>
-        const gizli = '{{ rand_example.german|safe }}';
-        document.getElementById('hiddenData').dataset.value = btoa(gizli);
     </script>
 
 
