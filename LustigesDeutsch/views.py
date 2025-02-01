@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
+from accounts.models import GamesRecords, UserScores
 from Lobby.models import GameRoom
 from .constants import g_names
 
@@ -63,6 +64,27 @@ def playervsplayer(request, game_name='vokabel'):
         return redirect('home')
 
 
-
 def all_ranking(request):
-    return render(request, 'all_ranking.html')
+    if not request.user.is_authenticated:
+        return redirect('user_login')
+    this_users = UserScores.objects.all()
+    # games = GamesRecords.filter(user= )
+    all_players = []
+    for u in this_users:
+        total_scores = sum([
+            u.vokabel_score,
+            u.singular_plural_score,
+            u.artikel_score,
+            u.verb_score,
+            u.adjektiv_score,
+            u.partizip_II_score
+        ])
+        user_games = GamesRecords.objects.filter(user=u.user).count()
+        all_players.append({
+            'total_score': total_scores,
+            'username': u.user.username,
+            'name': u.user.first_name,
+            'winner': user_games
+        })
+    context = {'all_players': sorted(all_players, key=lambda x: x['total_score'], reverse=True)}
+    return render(request, 'all_ranking.html', context)

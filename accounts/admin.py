@@ -7,8 +7,8 @@ from Singular_Plural.models import SingularPlural
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'total_scores')  # Specify the fields you want as columns
-    search_fields = ('user', 'total_scores')       # Add a search bar for these fields
+    list_display = ('id', 'user', 'profile_image')  # Specify the fields you want as columns
+    search_fields = ('id', 'user')       # Add a search bar for these fields
     ordering = ('-id',)                                    # Order by id
 
 
@@ -31,7 +31,8 @@ class UserScoresAdmin(admin.ModelAdmin):
                     'artikel_score',
                     'verb_score',
                     'adjektiv_score',
-                    'partizip_II_score')  # Specify the fields you want as columns
+                    'partizip_II_score',
+                    'satz_score')  # Specify the fields you want as columns
     search_fields = ('user',)       # Add a search bar for these fields
     ordering = ('id',)                                    # Order by id
 

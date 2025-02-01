@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'Verb.apps.VerbConfig',
     'Partizip_II.apps.PartizipIiConfig',
     'Adjektiv.apps.AdjektivConfig',
+    'Satz.apps.SatzConfig',
 ]
 
 MIDDLEWARE = [

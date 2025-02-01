@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from .models import Verb, Praesens, Praeteritum, Perfekt, Futur_I, Konjunktiv_II
-from Singular_Plural.models import SingularPlural
+from .models import Satz
 from accounts.models import GamesRecords, UserScores
 from Lobby.models import GameRoom, PlayerState
 from django.contrib.auth.models import User
@@ -17,7 +16,7 @@ import random
 
 
 def get_quiz():
-    all_exm = Verb.objects.all()
+    all_exm = Satz.objects.all()
     if not all_exm.exists():
         return None
     rand_id = random.randint(1, len(all_exm))
@@ -25,7 +24,7 @@ def get_quiz():
     return my_rand
 
 
-def play_game_verb_multi(request, game_name='verb', room_id=None):
+def play_game_satz_multi(request, game_name='satz', room_id=None):
 
     if not request.user.is_authenticated:
         messages.warning(request, 'You are not logged in.', extra_tags='warning')
@@ -51,13 +50,13 @@ def play_game_verb_multi(request, game_name='verb', room_id=None):
             'game_colors': game_colors,
             'MAX_DICE': MAX_DICE
         }
-        return render(request, 'verb_game_multi.html', context=context)
+        return render(request, 'satz_game_multi.html', context=context)
     else:
         messages.warning(request, 'Game is over.', extra_tags='warning')
         return redirect('home')
 
 
-def play_game_verb_one(request, game_name='verb'):
+def play_game_satz_one(request, game_name='satz'):
     if request.user.is_authenticated:
         if not request.session['players']:
             return redirect(reverse('home'))
@@ -109,7 +108,7 @@ def play_game_verb_one(request, game_name='verb'):
                                 winner = User.objects.get(id=player['id'])
                                 GamesRecords.objects.create(
                                     user=winner,
-                                    game_name='Verb',
+                                    game_name='Satz',
                                     score=player['game_score'])
                                 print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
@@ -117,9 +116,9 @@ def play_game_verb_one(request, game_name='verb'):
                         for pl in players:
                             if pl['game_score'] >= MIN_SCORE:
                                 person = User.objects.get(id=pl['id'])
-                                v_score = UserScores.objects.get(user=person).verb_score
-                                v_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(verb_score=v_score)
+                                sz_score = UserScores.objects.get(user=person).satz_score
+                                sz_score += pl['game_score']
+                                UserScores.objects.filter(user=person).update(satz_score=sz_score)
 
             request.session['players'] = players
             circle_data = []
@@ -148,77 +147,9 @@ def play_game_verb_one(request, game_name='verb'):
                 'rand_example': rand_example,
                 'game_colors': game_colors
             }
-            return render(request, 'verb_game_one.html', context=context)
+            return render(request, 'satz_game_one.html', context=context)
         else:
             request.session['players'] = []
             return redirect(reverse('home'))
     else:
         return redirect(reverse('user_login'))
-
-
-def add_verb(request):
-    if request.user.is_superuser:
-        infinitiv = "übertragen"
-        my_german = Verb.objects.filter(infinitiv=infinitiv).exists()
-        if not my_german:
-            level = "B1"
-            english = "to transfer, to convert"
-            turkish = "aktarmak, çevirmek"
-            this_verb = Verb.objects.create(
-                level=level, infinitiv=infinitiv,
-                english=english, turkish=turkish
-            )
-            Praesens.objects.create(
-                verb=this_verb,
-                ich="übertrage",
-                du="überträgst",
-                er_sie_es="überträgt",
-                wir="übertragen",
-                ihr="übertragt",
-                sie_Sie="übertragen",
-            )
-            Praeteritum.objects.create(
-                verb=this_verb,
-                ich="übertrug",
-                du="übertrugst",
-                er_sie_es="übertrug",
-                wir="übertrugen",
-                ihr="übertrugt",
-                sie_Sie="übertrugen",
-            )
-            partizip_ii = "übertragen"
-            Perfekt.objects.create(
-                verb=this_verb,
-                partizip_ii=partizip_ii,
-                ich="habe " + partizip_ii,
-                du="hast " + partizip_ii,
-                er_sie_es="hat " + partizip_ii,
-                wir="haben " + partizip_ii,
-                ihr="habt " + partizip_ii,
-                sie_Sie="haben " + partizip_ii,
-            )
-            Futur_I.objects.create(
-                verb=this_verb,
-                ich="werde " + infinitiv,
-                du="wirst " + infinitiv,
-                er_sie_es="wird " + infinitiv,
-                wir="werden " + infinitiv,
-                ihr="werdet " + infinitiv,
-                sie_Sie="werden " + infinitiv,
-            )
-            Konjunktiv_II.objects.create(
-                verb=this_verb,
-                ich="übertrüge",
-                du="übertrügest",
-                er_sie_es="übertrüge",
-                wir="übertrügen",
-                ihr="übertrüget",
-                sie_Sie="übertrügen",
-            )
-            messages.success(request, 'Verb added successfully', extra_tags='success')
-        else:
-            messages.warning(request, 'Verb already exists', extra_tags='warning')
-        return redirect(reverse('home'))
-    else:
-        messages.warning(request, 'You are not admin!', extra_tags='warning')
-        return redirect(reverse('home'))

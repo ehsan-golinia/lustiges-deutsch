@@ -7,7 +7,6 @@ from django.core.validators import MinValueValidator
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    total_scores = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
     profile_image = models.ImageField(
         upload_to='profile_images/',
         null=True,
@@ -16,7 +15,7 @@ class UserProfile(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} --> {self.total_scores}"
+        return f"{self.user.username}"
 
     class Meta:
         verbose_name = "User Profile"
@@ -34,9 +33,23 @@ class UserScores(models.Model):
     present_verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
     past_verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
     partizip_II_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    satz_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
 
     def __str__(self):
         return f"{self.user.username}"
+
+    def total_scores(self):
+        return sum([
+            self.vokabel_score,
+            self.singular_plural_score,
+            self.artikel_score,
+            self.adjektiv_score,
+            self.adjektiv_deklination_score,
+            self.verb_score,
+            self.present_verb_score,
+            self.past_verb_score,
+            self.partizip_II_score
+        ])
 
     class Meta:
         verbose_name = "User Score"
@@ -56,7 +69,4 @@ class GamesRecords(models.Model):
     class Meta:
         verbose_name = "Games Records"
         verbose_name_plural = "Games Records"
-
-
-# Signal to Update Total Scores in UserProfile
 

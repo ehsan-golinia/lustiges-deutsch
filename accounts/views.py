@@ -63,7 +63,7 @@ def user_logout(request):
     return redirect(reverse('home'))
 
 
-def user_profile(request):
+def user_settings(request):
     if request.user.is_authenticated:
         if request.method == 'POST':
             form = UpdateForm(request.POST)
@@ -98,6 +98,14 @@ def user_profile(request):
                 'username': request.user.username,
             })
 
-        return render(request, 'profile.html', {'form': form})
+        return render(request, 'settings.html', {'form': form})
     else:
         return redirect(reverse('user_login'))
+
+
+def user_profile(request):
+    this_user = UserScores.objects.get(user=request.user)
+    context = {
+        'this_user': ''
+    }
+    return render(request, 'profile.html', {'form': context})

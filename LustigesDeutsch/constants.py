@@ -9,7 +9,8 @@ g_names = [
     'artikel',
     'verb',
     'adjektiv',
-    'partizip_II'
+    'partizip_II',
+    'satz'
 ]
 
 

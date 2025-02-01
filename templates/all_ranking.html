@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ranking{% endblock %}
+
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+    <header class="text-center my-5 mt-lg-1">
+    <a href="{% url 'home' %}" class="fw-bold text-decoration-none text-uppercase text-warning h1">🏆 Ranking 🏅</a>
+  </header>
+    <div class="container">
+    <div class="row mx-5">
+        <table class="table text-light">
+  <thead>
+    <tr>
+      <th scope="col">Score</th>
+      <th scope="col">Username</th>
+      <th scope="col">Name</th>
+      <th scope="col">Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for p in all_players %}
+    <tr class="{% if user.username == p.username %}table-warning{% endif %}">
+      <th scope="row">{{ p.total_score }}</th>
+      <td>@{{ p.username }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.winner }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+  </div>
+  </div>
+{% endblock %}

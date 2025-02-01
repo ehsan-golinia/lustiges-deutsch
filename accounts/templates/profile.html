@@ -6,60 +6,186 @@
 {% block content %}
 
         <section class="bg-image"
-  style="background-image: url('{% static 'images/background.jpg' %}');">
-  <div class="mask d-flex align-items-center h-100 gradient-custom-3">
-    <div class="container col-sm ">
-      <div class="row d-flex justify-content-center align-items-center ">
-        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
-          <div class="card text-white bg-dark m-4" style="border-radius: 15px;">
-            <div class="card-body-dark p-5">
-                <h2 class="text-uppercase text-center mb-5"><span class="text-warning">{{ user.first_name }}</span>'s Profile</h2>
+      style="background-image: url('{% static 'images/background.jpg' %}');">
+      <div class="mask d-flex align-items-center h-100 gradient-custom-3">
+        <div class="container col-sm ">
+          <div class="row d-flex justify-content-center align-items-center ">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+              <div class="card text-white bg-dark m-4" style="border-radius: 15px;">
+                <div class="card-body-dark p-5">
+                    <h2 class="text-uppercase text-center mb-5"><span class="text-warning">{{ user.first_name }}</span>'s Profile</h2>
 
-              <form action="" method="POST">
-                  {% csrf_token %}
+                    <div class="row">
+                        <div id="radar-chart" class="d-flex justify-content-center"></div>
+                    </div>
 
-                <div data-mdb-input-init class="form-outline mb-4">
-                    {{ form.first_name }}
-                  <label class="form-label" for="form3Example1cg">First Name</label>
                 </div>
-
-                  <div data-mdb-input-init class="form-outline mb-4">
-                      {{ form.last_name }}
-                  <label class="form-label" for="form3Example1cg">Last Name</label>
-                </div>
-
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    {{ form.email }}
-                  <label class="form-label" for="form3Example3cg">Email</label>
-                </div>
-
-                <div data-mdb-input-init class="form-outline mb-4">
-                    {{ form.username }}
-                  <label class="form-label required" for="form3Example3cg">Username</label>
-                </div>
-
-                <div data-mdb-input-init class="form-outline mb-4">
-                    {{ form.password }}
-                  <label class="form-label" for="form3Example4cg">Password</label>
-                </div>
-
-                <div data-mdb-input-init class="form-outline mb-4">
-                    {{ form.password2 }}
-                  <label class="form-label" for="form3Example4cdg">Repeat your password</label>
-                </div>
-
-
-                <div class="d-flex justify-content-center">
-                  <button  type="submit" name="update" class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">Update</button>
-                </div>
-
-              </form>
-
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
+
+    <script>
+        // Scalable Radar Chart Visualization
+        class RadarChart {
+            constructor(containerId, options = {}) {
+                // Default configuration
+                this.config = {
+                    width: options.width || 600,
+                    height: options.height || 600,
+                    margins: options.margins || { top: 50, right: 50, bottom: 50, left: 50 },
+                    maxValue: options.maxValue || 500,
+                    levels: options.levels || 5,
+                    roundStrokes: options.roundStrokes || true,
+                    color: options.color || d3.scaleSequential(d3.interpolateBlues),
+                    legendPosition: options.legendPosition || 'right'
+                };
+
+                this.containerId = containerId;
+                this.svg = null;
+            }
+
+            // Prepare data for radar chart
+            prepareData(data) {
+                // Dynamic generation of axes based on input data
+                return Object.entries(data).map(([key, value]) => ({
+                    axis: this.formatAxisLabel(key),
+                    value: value || 0
+                }));
+            }
+
+            // Format axis labels (convert snake_case to Title Case)
+            formatAxisLabel(key) {
+                return key
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')
+                    .replace(/Score/, '');
+            }
+
+            // Create the radar chart
+            create(data) {
+                // Clear previous chart
+                d3.select(`#${this.containerId}`).selectAll("*").remove();
+
+                const scores = this.prepareData(data);
+
+                const cfg = this.config;
+                const radius = Math.min(
+                    cfg.width - cfg.margins.left - cfg.margins.right,
+                    cfg.height - cfg.margins.top - cfg.margins.bottom
+                ) / 2;
+
+                // Total number of axes
+                const total = scores.length;
+                const angleSlice = Math.PI * 2 / total;
+
+                // Scales
+                const rScale = d3.scaleLinear()
+                    .range([0, radius])
+                    .domain([0, cfg.maxValue]);
+
+                // Create SVG
+                this.svg = d3.select(`#${this.containerId}`)
+                    .append("svg")
+                    .attr("width", cfg.width)
+                    .attr("height", cfg.height)
+                    .append("g")
+                    .attr("transform", `translate(${cfg.width/2},${cfg.height/2})`);
+
+                // Background circular grid
+                const gridCircles = d3.range(1, cfg.levels + 1)
+                    .map(d => d * (radius / cfg.levels));
+
+                this.svg.selectAll(".grid-circle")
+                    .data(gridCircles)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "grid-circle")
+                    .attr("r", d => d)
+                    .style("fill", "none")
+                    .style("stroke", "#005336")
+                    .style("stroke-dasharray", "4 2");
+
+                // Axis lines
+                const axisGrid = this.svg.selectAll(".axis")
+                    .data(scores)
+                    .enter()
+                    .append("g")
+                    .attr("class", "axis");
+
+                axisGrid.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
+                    .attr("y2", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2))
+                    .style("stroke", "#999")
+                    .style("stroke-width", "1px");
+
+                // Radar area
+                const radarLine = d3.lineRadial()
+                    .radius(d => rScale(d.value))
+                    .angle((d, i) => i * angleSlice)
+                    .curve(cfg.roundStrokes ? d3.curveCardinalClosed : d3.curveLinearClosed);
+
+                this.svg.append("path")
+                    .datum(scores)
+                    .attr("d", radarLine)
+                    .style("fill", cfg.color(0.7))
+                    .style("fill-opacity", 0.7)
+                    .style("stroke", cfg.color(0.9))
+                    .style("stroke-width", "2px");
+
+                // Data points
+                this.svg.selectAll(".radar-point")
+                    .data(scores)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "radar-point")
+                    .attr("r", 5)
+                    .attr("cx", (d, i) => rScale(d.value) * Math.cos(angleSlice * i - Math.PI / 2))
+                    .attr("cy", (d, i) => rScale(d.value) * Math.sin(angleSlice * i - Math.PI / 2))
+                    .style("fill", "#fff")
+                    .style("stroke", "#0000ff")
+                    .style("stroke-width", "2px");
+
+                // Axis labels
+                this.svg.selectAll(".axis-label")
+                    .data(scores)
+                    .enter()
+                    .append("text")
+                    .attr("class", "axis-label")
+                    .attr("x", (d, i) => rScale(d.value + 10) * Math.cos(angleSlice * i - Math.PI / 2))
+                    .attr("y", (d, i) => rScale(d.value + 10) * Math.sin(angleSlice * i - Math.PI / 2))
+                    .text(d => `${d.axis} (${d.value})`)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "14px")
+                    .style("fill", "#faff00");
+
+                return this;
+            }
+        }
+
+        // Usage in Django template
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageScores = {
+                vokabel_score: {{ user.scores.vokabel_score }},
+                singular_plural_score: {{ user.scores.singular_plural_score }},
+                artikel_score: {{ user.scores.artikel_score }},
+                verb_score: {{ user.scores.verb_score }},
+                adjektiv_score: {{ user.scores.adjektiv_score }},
+                partizip_II_score: {{ user.scores.partizip_II_score }},
+            };
+
+            // Create radar chart with custom options
+            const radarChart = new RadarChart('radar-chart', {
+                width: 400,  // Increased width
+                height: 400, // Increased height
+                maxValue: 30,
+                levels: 6
+            }).create(languageScores);
+        });
+    </script>
 {% endblock %}

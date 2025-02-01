@@ -20,7 +20,7 @@
                 Hi {{ user.first_name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <li><p class="dropdown-item">Total Score: <span class="fw-bold">{{ user.profile.total_scores }}</span></p></li>
+              <li><p class="dropdown-item">Total Scores: <span class="fw-bold">{{ user.scores.total_scores }}</span></p></li>
             <li><hr class="dropdown-divider"></li>
                 {% if user.is_superuser %}
                     <li><a class="dropdown-item" href="{% url 'Vokabel:add_vokabel' %}"><i class="fa-solid fa-plus"></i> Add Vokabel</a></li>
@@ -31,6 +31,7 @@
                 {% endif %}
                   <li><a class="dropdown-item" href="{% url 'all_ranking' %}"><i class="fa-solid fa-ranking-star"></i> Ranking</a></li>
             <li><a class="dropdown-item" href="{% url 'user_profile' %}"><i class="fa-solid fa-user-tie"></i> Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fa-solid fa-gear"></i> Settings</a></li>
             <li><a class="dropdown-item text-danger" href="{% url 'user_logout' %}"><i class="fa-solid fa-door-open"></i> Logout</a></li>
           </ul>
         </li>

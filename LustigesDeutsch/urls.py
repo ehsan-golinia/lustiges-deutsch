@@ -38,6 +38,7 @@ urlpatterns = [
     path('verb/', include('Verb.urls')),
     path('partizip_II/', include('Partizip_II.urls')),
     path('adjektiv/', include('Adjektiv.urls')),
+    path('satz/', include('Satz.urls')),
 ]
 
 if settings.DEBUG:
