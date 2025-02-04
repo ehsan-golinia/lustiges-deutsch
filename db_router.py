@@ -1,13 +1,19 @@
 class DatabaseRouter:
     def db_for_read(self, model, **hints):
         """Point database operations for specific apps to MongoDB."""
-        if model._meta.app_label in ['Vokabel', 'Artikel', 'Singular_Plural', 'Verb', 'Adjektiv', 'Satz']:
+        if model._meta.app_label in [
+            'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
+            'Adjektiv', 'Satz', 'Adjektivdeklination'
+        ]:
             return 'deutschDB'
         return 'default'
 
     def db_for_write(self, model, **hints):
         """Point writes for specific apps to MongoDB."""
-        if model._meta.app_label in ['Vokabel', 'Artikel', 'Singular_Plural', 'Verb', 'Adjektiv', 'Satz']:
+        if model._meta.app_label in [
+            'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
+            'Adjektiv', 'Satz', 'Adjektivdeklination'
+        ]:
             return 'deutschDB'
         return 'default'
 
@@ -20,6 +26,9 @@ class DatabaseRouter:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """Control migrations for each database."""
-        if app_label in ['Vokabel', 'Artikel', 'Singular_Plural', 'Verb', 'Adjektiv', 'Satz']:
+        if app_label in [
+            'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
+            'Adjektiv', 'Satz', 'Adjektivdeklination'
+        ]:
             return db == 'deutschDB'
         return db == 'default'

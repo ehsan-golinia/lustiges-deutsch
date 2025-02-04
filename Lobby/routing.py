@@ -6,6 +6,7 @@ from Artikel.consumers import ArtikelGameConsumer
 from Adjektiv.consumers import AdjektivGameConsumer
 from Partizip_II.consumers import Partizip_II_GameConsumer
 from Satz.consumers import SatzGameConsumer
+from Adjektivdeklination.consumers import AdjektivdeklinationGameConsumer
 
 websocket_urlpatterns = [
     re_path(r"ws/vokabel/(?P<gameroom_id>\w+)/$", VokabelGameConsumer.as_asgi()),
@@ -15,4 +16,5 @@ websocket_urlpatterns = [
     re_path(r"ws/partizip_II/(?P<gameroom_id>\w+)/$", Partizip_II_GameConsumer.as_asgi()),
     re_path(r"ws/adjektiv/(?P<gameroom_id>\w+)/$", AdjektivGameConsumer.as_asgi()),
     re_path(r"ws/satz/(?P<gameroom_id>\w+)/$", SatzGameConsumer.as_asgi()),
+    re_path(r"ws/adjektivdeklination/(?P<gameroom_id>\w+)/$", AdjektivdeklinationGameConsumer.as_asgi()),
 ]

@@ -1,7 +1,7 @@
 MIN_SCORE = 6
 
 
-MAX_DICE = 5
+MAX_DICE = 4
 
 g_names = [
     'vokabel',
@@ -10,7 +10,8 @@ g_names = [
     'verb',
     'adjektiv',
     'partizip_II',
-    'satz'
+    'satz',
+    'adjektivdeklination',
 ]
 
 

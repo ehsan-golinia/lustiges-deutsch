@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'Partizip_II.apps.PartizipIiConfig',
     'Adjektiv.apps.AdjektivConfig',
     'Satz.apps.SatzConfig',
+    'Adjektivdeklination.apps.AdjektivdeklinationConfig',
 ]
 
 MIDDLEWARE = [

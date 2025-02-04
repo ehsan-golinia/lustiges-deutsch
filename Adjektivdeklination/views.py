@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from .models import Verb, Praesens, Praeteritum, Perfekt, Futur_I, Konjunktiv_II
+from .models import Adjektivdeklination, AdjKasus
 from Singular_Plural.models import SingularPlural
 from accounts.models import GamesRecords, UserScores
 from Lobby.models import GameRoom, PlayerState
@@ -17,15 +17,14 @@ import random
 
 
 def get_quiz():
-    all_exm = Verb.objects.all()
+    all_exm = AdjKasus.objects.all()
     if not all_exm.exists():
         return None
-    rand_id = random.randint(1, len(all_exm))
-    my_rand = all_exm.get(id=rand_id)
+    my_rand = random.choice(all_exm)
     return my_rand
 
 
-def play_game_verb_multi(request, game_name='verb', room_id=None):
+def play_game_adjektivdeklination_multi(request, game_name='adjektivdeklination', room_id=None):
 
     if not request.user.is_authenticated:
         messages.warning(request, 'You are not logged in.', extra_tags='warning')
@@ -51,13 +50,13 @@ def play_game_verb_multi(request, game_name='verb', room_id=None):
             'game_colors': game_colors,
             'MAX_DICE': MAX_DICE
         }
-        return render(request, 'verb_game_multi.html', context=context)
+        return render(request, 'adjektivdeklination_game_multi.html', context=context)
     else:
         messages.warning(request, 'Game is over.', extra_tags='warning')
         return redirect('home')
 
 
-def play_game_verb_one(request, game_name='verb'):
+def play_game_adjektivdeklination_one(request, game_name='adjektivdeklination'):
     if request.user.is_authenticated:
         if not request.session['players']:
             return redirect(reverse('home'))
@@ -109,7 +108,7 @@ def play_game_verb_one(request, game_name='verb'):
                                 winner = User.objects.get(id=player['id'])
                                 GamesRecords.objects.create(
                                     user=winner,
-                                    game_name='Verb',
+                                    game_name='Adjektivdeklination',
                                     score=player['game_score'])
                                 print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
@@ -117,9 +116,9 @@ def play_game_verb_one(request, game_name='verb'):
                         for pl in players:
                             if pl['game_score'] >= MIN_SCORE:
                                 person = User.objects.get(id=pl['id'])
-                                v_score = UserScores.objects.get(user=person).verb_score
-                                v_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(verb_score=v_score)
+                                adjDek_score = UserScores.objects.get(user=person).adjektiv_deklination_score
+                                adjDek_score += pl['game_score']
+                                UserScores.objects.filter(user=person).update(adjektiv_deklination_score=adjDek_score)
 
             request.session['players'] = players
             circle_data = []
@@ -148,7 +147,7 @@ def play_game_verb_one(request, game_name='verb'):
                 'rand_example': rand_example,
                 'game_colors': game_colors
             }
-            return render(request, 'verb_game_one.html', context=context)
+            return render(request, 'adjektivdeklination_game_one.html', context=context)
         else:
             request.session['players'] = []
             return redirect(reverse('home'))
@@ -156,81 +155,27 @@ def play_game_verb_one(request, game_name='verb'):
         return redirect(reverse('user_login'))
 
 
-def add_verb(request):
+def add_adjektivdeklination(request):
     if request.user.is_superuser:
-        infinitiv = "richten"
-        my_german = Verb.objects.filter(infinitiv=infinitiv).exists()
-        if not my_german:
-            level = "B1"
-            english = "to direct, to adjust"
-            turkish = "doğrultmak, düzeltmek"
-            this_verb = Verb.objects.create(
-                level=level, infinitiv=infinitiv,
-                english=english, turkish=turkish
+        my_english = "old cathedrals"
+        my_type = "null"
+        is_exist = Adjektivdeklination.objects.filter(english=my_english, type=my_type).exists()
+        if not is_exist:
+            my_adj = Adjektivdeklination.objects.create(
+                english=my_english,
+                turkish="eski katedraller",
+                type=my_type
             )
-            Praesens.objects.create(
-                verb=this_verb,
-                ich="richte",
-                du="richtest",
-                er_sie_es="richtet",
-                wir="richten",
-                ihr="richtet",
-                sie_Sie="richten",
+            AdjKasus.objects.create(
+                adjDek=my_adj,
+                nom="alte Dome",
+                akk="alte Dome",
+                dat="alten Domen",
+                gen="alter Dome"
             )
-            Praeteritum.objects.create(
-                verb=this_verb,
-                ich="richtete",
-                du="richtetest",
-                er_sie_es="richtete",
-                wir="richteten",
-                ihr="richtetet",
-                sie_Sie="richteten",
-            )
-            partizip_ii = "gerichtet"
-            status = "haben"
-            if status == "haben":
-                Perfekt.objects.create(
-                    verb=this_verb,
-                    partizip_ii=partizip_ii,
-                    ich="habe " + partizip_ii,
-                    du="hast " + partizip_ii,
-                    er_sie_es="hat " + partizip_ii,
-                    wir="haben " + partizip_ii,
-                    ihr="habt " + partizip_ii,
-                    sie_Sie="haben " + partizip_ii,
-                )
-            if status == "sein":
-                Perfekt.objects.create(
-                    verb=this_verb,
-                    partizip_ii=partizip_ii,
-                    ich="bin " + partizip_ii,
-                    du="bist " + partizip_ii,
-                    er_sie_es="ist " + partizip_ii,
-                    wir="sind " + partizip_ii,
-                    ihr="seid " + partizip_ii,
-                    sie_Sie="sind " + partizip_ii,
-                )
-            Futur_I.objects.create(
-                verb=this_verb,
-                ich="werde " + infinitiv,
-                du="wirst " + infinitiv,
-                er_sie_es="wird " + infinitiv,
-                wir="werden " + infinitiv,
-                ihr="werdet " + infinitiv,
-                sie_Sie="werden " + infinitiv,
-            )
-            Konjunktiv_II.objects.create(
-                verb=this_verb,
-                ich="richtete",
-                du="richtetest",
-                er_sie_es="richtete",
-                wir="richteten",
-                ihr="richtetet",
-                sie_Sie="richteten",
-            )
-            messages.success(request, 'Verb added successfully', extra_tags='success')
+            messages.success(request, 'Adjektivdeklination added successfully', extra_tags='success')
         else:
-            messages.warning(request, 'Verb already exists', extra_tags='warning')
+            messages.warning(request, 'Adjektivdeklination already exists', extra_tags='warning')
         return redirect(reverse('home'))
     else:
         messages.warning(request, 'You are not admin!', extra_tags='warning')

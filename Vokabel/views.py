@@ -158,17 +158,17 @@ def play_game_vokabel_one(request, game_name='vokabel'):
 
 def add_vokabel(request):
     if request.user.is_superuser:
-        my_german = "Das Heu"
+        my_german = "Der Klimaschutz"
         is_exist = Vokabel.objects.filter(german=my_german).exists()
         if not is_exist:
             vokabel = Vokabel.objects.create(
                 german=my_german,
-                english="the hay",
-                turkish="saman, kuru ot"
+                english="the climate protection",
+                turkish="iklim koruma"
             )
             SingularPlural.objects.create(
                 singular=my_german,
-                plural="-",
+                plural="Die Klimaschutze",
                 vokabel=vokabel
             )
             messages.success(request, 'Vokabel added successfully', extra_tags='success')

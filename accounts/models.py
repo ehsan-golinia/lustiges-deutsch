@@ -48,7 +48,8 @@ class UserScores(models.Model):
             self.verb_score,
             self.present_verb_score,
             self.past_verb_score,
-            self.partizip_II_score
+            self.partizip_II_score,
+            self.satz_score,
         ])
 
     class Meta:
