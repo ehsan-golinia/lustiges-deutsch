@@ -158,35 +158,35 @@ def play_game_verb_one(request, game_name='verb'):
 
 def add_verb(request):
     if request.user.is_superuser:
-        infinitiv = "richten"
+        infinitiv = "verspäten"
         my_german = Verb.objects.filter(infinitiv=infinitiv).exists()
         if not my_german:
-            level = "B1"
-            english = "to direct, to adjust"
-            turkish = "doğrultmak, düzeltmek"
+            level = "C2"
+            english = "to be late, to delay"
+            turkish = "gecikmek, geç kalmak"
             this_verb = Verb.objects.create(
                 level=level, infinitiv=infinitiv,
                 english=english, turkish=turkish
             )
             Praesens.objects.create(
                 verb=this_verb,
-                ich="richte",
-                du="richtest",
-                er_sie_es="richtet",
-                wir="richten",
-                ihr="richtet",
-                sie_Sie="richten",
+                ich="verspäte",
+                du="verspätest",
+                er_sie_es="verspätet",
+                wir="verspäten",
+                ihr="verspätet",
+                sie_Sie="verspäten",
             )
             Praeteritum.objects.create(
                 verb=this_verb,
-                ich="richtete",
-                du="richtetest",
-                er_sie_es="richtete",
-                wir="richteten",
-                ihr="richtetet",
-                sie_Sie="richteten",
+                ich="verspätete",
+                du="verspätetest",
+                er_sie_es="verspätete",
+                wir="verspäteten",
+                ihr="verspätetet",
+                sie_Sie="verspäteten",
             )
-            partizip_ii = "gerichtet"
+            partizip_ii = "verspätet"
             status = "haben"
             if status == "haben":
                 Perfekt.objects.create(
@@ -221,12 +221,12 @@ def add_verb(request):
             )
             Konjunktiv_II.objects.create(
                 verb=this_verb,
-                ich="richtete",
-                du="richtetest",
-                er_sie_es="richtete",
-                wir="richteten",
-                ihr="richtetet",
-                sie_Sie="richteten",
+                ich="verspätete",
+                du="verspätetest",
+                er_sie_es="verspätete",
+                wir="verspäteten",
+                ihr="verspätetet",
+                sie_Sie="verspäteten",
             )
             messages.success(request, 'Verb added successfully', extra_tags='success')
         else:

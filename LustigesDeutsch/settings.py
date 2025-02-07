@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'Adjektiv.apps.AdjektivConfig',
     'Satz.apps.SatzConfig',
     'Adjektivdeklination.apps.AdjektivdeklinationConfig',
+    'Zahlen.apps.ZahlenConfig',
 ]
 
 MIDDLEWARE = [

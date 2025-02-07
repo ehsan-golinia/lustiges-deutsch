@@ -34,6 +34,7 @@ class UserScores(models.Model):
     past_verb_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
     partizip_II_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
     satz_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
+    zahlen_score = models.IntegerField(default=0, validators=[MinValueValidator(0, message="Total scores must be 0 or greater.")])
 
     def __str__(self):
         return f"{self.user.username}"
@@ -50,6 +51,7 @@ class UserScores(models.Model):
             self.past_verb_score,
             self.partizip_II_score,
             self.satz_score,
+            self.zahlen_score
         ])
 
     class Meta:

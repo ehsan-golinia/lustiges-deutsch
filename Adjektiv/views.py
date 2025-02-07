@@ -157,15 +157,15 @@ def play_game_adjektiv_one(request, game_name='adjektiv'):
 
 def add_adjektiv(request):
     if request.user.is_superuser:
-        my_positiv = "dick"
+        my_positiv = "sauer"
         is_exist = Adjektiv.objects.filter(positiv=my_positiv).exists()
         if not is_exist:
             Adjektiv.objects.create(
-                english="thick, fat",
-                turkish="kalın, kilolu",
+                english="angry, sour",
+                turkish="kızgın, ekşi,",
                 positiv=my_positiv,
-                komparativ="dicker",
-                superlativ="am dicksten"
+                komparativ="sauerer",
+                superlativ="am sauersten"
             )
             messages.success(request, 'Adjektiv added successfully', extra_tags='success')
         else:

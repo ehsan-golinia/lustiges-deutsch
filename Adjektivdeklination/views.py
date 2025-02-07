@@ -157,21 +157,21 @@ def play_game_adjektivdeklination_one(request, game_name='adjektivdeklination'):
 
 def add_adjektivdeklination(request):
     if request.user.is_superuser:
-        my_english = "old cathedrals"
+        my_english = "sour cucumbers"
         my_type = "null"
         is_exist = Adjektivdeklination.objects.filter(english=my_english, type=my_type).exists()
         if not is_exist:
             my_adj = Adjektivdeklination.objects.create(
                 english=my_english,
-                turkish="eski katedraller",
+                turkish="ekşi salatalıklar",
                 type=my_type
             )
             AdjKasus.objects.create(
                 adjDek=my_adj,
-                nom="alte Dome",
-                akk="alte Dome",
-                dat="alten Domen",
-                gen="alter Dome"
+                nom="saure Gurken",
+                akk="saure Gurken",
+                dat="sauren Gurken",
+                gen="saurer Gurken"
             )
             messages.success(request, 'Adjektivdeklination added successfully', extra_tags='success')
         else:

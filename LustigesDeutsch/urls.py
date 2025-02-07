@@ -40,6 +40,7 @@ urlpatterns = [
     path('adjektiv/', include('Adjektiv.urls')),
     path('satz/', include('Satz.urls')),
     path('adjektivdeklination/', include('Adjektivdeklination.urls')),
+    path('zahlen/', include('Zahlen.urls')),
 ]
 
 if settings.DEBUG:

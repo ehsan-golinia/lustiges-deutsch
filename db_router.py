@@ -3,7 +3,7 @@ class DatabaseRouter:
         """Point database operations for specific apps to MongoDB."""
         if model._meta.app_label in [
             'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
-            'Adjektiv', 'Satz', 'Adjektivdeklination'
+            'Adjektiv', 'Satz', 'Adjektivdeklination', 'Zahlen'
         ]:
             return 'deutschDB'
         return 'default'
@@ -12,7 +12,7 @@ class DatabaseRouter:
         """Point writes for specific apps to MongoDB."""
         if model._meta.app_label in [
             'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
-            'Adjektiv', 'Satz', 'Adjektivdeklination'
+            'Adjektiv', 'Satz', 'Adjektivdeklination', 'Zahlen'
         ]:
             return 'deutschDB'
         return 'default'
@@ -28,7 +28,7 @@ class DatabaseRouter:
         """Control migrations for each database."""
         if app_label in [
             'Vokabel', 'Artikel', 'Singular_Plural', 'Verb',
-            'Adjektiv', 'Satz', 'Adjektivdeklination'
+            'Adjektiv', 'Satz', 'Adjektivdeklination', 'Zahlen'
         ]:
             return db == 'deutschDB'
         return db == 'default'
