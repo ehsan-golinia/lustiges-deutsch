@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ game_name | title }} Game{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4">
+            <div class="col">
+
+                    {% include 'board.html' %}
+
+            </div>
+            <div class="col">
+                <div class="row text-warning">
+                    {% for p in players %}
+                    <div class="col text-center text-{% for k,v in game_colors.items %}{% if k == p.color %}{{ v }}{% endif %}{% endfor %}">
+                        <h4>{% if p.turn %}<img
+                            src="{{ p.photo }}"
+                            alt="Profile Picture"
+                            class="rounded-circle"
+                            style="width: 30px; height: 30px; object-fit: cover; margin-right: 8px;">{% endif %}{{ p.name }}</h4>
+                        <h2>{{ p.game_score }}</h2>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+
+                <div class="col">
+                    <div class="dice img-fluid bg-white p-2 d-flex justify-content-center mx-5">
+                        <img src="{% static 'images/dice/dice-' %}{{ dice_number }}.png" alt="Dice" width="60px">
+                    </div>
+                </div>
+
+                </div>
+            <div class="row">
+
+                <hr>
+                <hr>
+                <hr>
+                <hr>
+                </div>
+            <div class="row mx-5">
+                {% for p in players %}
+                    <div class="row text-{% for k,v in game_colors.items %}{% if k == p.color %}{{ v }}{% endif %}{% endfor %} my-2">
+                        <h4>{{ p.name }} <i class="fa-solid fa-circle-right fa-2xs" style="color: #63E6BE;"></i> <span id="j{{ p.jersey }}"></span></h4>
+                    </div>
+                {% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="" method="POST">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center mt-5">
+                <button type="submit"
+                            name="end_game"
+                            class="btn btn-outline-danger mx-2"
+                            value="{{ user.username }}"
+                            onclick="return confirmEndGame()">End Game</button>
+                <button type="submit" name="player_jersey" class="btn btn-warning mx-2"
+                        value="{% for pl in players %}{% if pl.turn %}{{ pl.jersey }}{% endif %}{% endfor %}">
+                    Roll Dice</button>
+            </div>
+            {% include 'software_modals_one.html' %}
+    </form>
+
+    <script>
+        function confirmEndGame() {
+            return confirm("Are you sure you want to end the game?");
+        }
+    </script>
+
+
+    <script>
+    // Define the exact positions of the cells in the board layout
+    const boardData = {{ board_data|safe }};
+
+    const cellSize = {{ cell_size|safe }};
+    const circleData = {{ circle_data|safe }};
+
+
+
+  // Create the SVG board
+  const svg = d3.select('#board');
+
+  // Draw cells
+  svg.selectAll('.cell')
+    .data(boardData)
+    .enter()
+    .append('rect')
+    .attr('class', (d) => `cell ${d.special}`)
+    .attr('x', (d) => d.x * cellSize)
+    .attr('y', (d) => d.y * cellSize)
+    .attr('width', cellSize)
+    .attr('height', cellSize);
+
+
+
+  // Add text labels
+  svg.selectAll('text')
+    .data(boardData)
+    .enter()
+    .append('text').attr('class', 'sp-text')
+    .attr('x', (d) => d.x * cellSize + cellSize / 2)
+    .attr('y', (d) => d.y * cellSize + cellSize / 2)
+    .text((d) => d.special)
+    .style('pointer-events', 'none') // Prevent text from blocking clicks
+    .style('font-size', '14px')
+    .style('fill', '#385170');
+
+    // Add player circle
+  const player = svg.selectAll('circle')
+    .data(circleData)
+    .join(
+        enter => enter.append('circle')
+        .attr('r', 20)
+        .style('fill', d => d.fill).style('opacity', 0.6)
+        .style('stroke', 'black')
+        .attr('cx', d => d.px)
+        .attr('cy', d => d.py),
+        update => update
+    );
+
+
+  player.transition()
+    .duration(1000) // 1-second animation
+    .ease(d3.easeCubicInOut)
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+
+    const q_box = {{ q_box|lower }}
+    document.addEventListener('DOMContentLoaded', function() {
+        const myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+            backdrop: 'static',  // Modal won't close when clicking outside
+            keyboard: false      // Modal won't close on pressing ESC key
+        });
+        if (q_box) {
+            setTimeout(()=>myModal.show(),3000);
+        }
+    });
+</script>
+
+    <script>
+        const current_dice = {{ dice_number }};
+        if (current_dice !== 0) {
+            {% for p in players %}
+                document.getElementById("j{{ p.jersey }}").innerHTML += "{{ p.dice_history|join:', ' }}";
+            {% endfor %}
+        }
+    </script>
+
+
+{% endblock %}

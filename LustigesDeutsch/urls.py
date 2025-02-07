@@ -41,6 +41,8 @@ urlpatterns = [
     path('satz/', include('Satz.urls')),
     path('adjektivdeklination/', include('Adjektivdeklination.urls')),
     path('zahlen/', include('Zahlen.urls')),
+    path('ki/', include('KI.urls')),
+    path('software/', include('Software.urls')),
 ]
 
 if settings.DEBUG:

@@ -12,7 +12,9 @@ g_names = [
     'partizip_II',
     'satz',
     'adjektivdeklination',
-    'zahlen'
+    'zahlen',
+    'ki',
+    'software',
 ]
 
 

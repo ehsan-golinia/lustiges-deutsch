@@ -112,6 +112,32 @@
               </div>
             </a>
         </div>
+        {% if user.username == 'ehsan95ai' %}
+            <!-- Card * -->
+            <div class="col">
+                <a href="ki/playervsplayer/" class="text-decoration-none text-dark" title="KI">
+                  <div class="card bg-info custom-card position-relative">
+                    <img src="{% static 'images/ki.png' %}" class="card-img-top" alt="KI">
+                    <div class="card-body text-center hover-title position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center opacity-0">
+                      <p class="fw-bold h6">Künstliche Intelligenz</p>
+                    </div>
+                  </div>
+                </a>
+            </div>
+        {% endif %}
+        {% if user.username == 'mahsa95ui' %}
+            <!-- Card * -->
+            <div class="col">
+                <a href="software/playervsplayer/" class="text-decoration-none text-dark" title="Software Engineering">
+                  <div class="card bg-info custom-card position-relative">
+                    <img src="{% static 'images/software.png' %}" class="card-img-top" alt="Software Engineering">
+                    <div class="card-body text-center hover-title position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center opacity-0">
+                      <p class="fw-bold h6">Software Engineering</p>
+                    </div>
+                  </div>
+                </a>
+            </div>
+        {% endif %}
   </div>
   </div>
 {% endblock %}

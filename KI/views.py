@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from .models import Adjektiv
+from .models import KI
 from accounts.models import GamesRecords, UserScores
 from Lobby.models import GameRoom, PlayerState
 from django.contrib.auth.models import User
@@ -16,15 +16,14 @@ import random
 
 
 def get_quiz():
-    all_exm = Adjektiv.objects.all()
+    all_exm = KI.objects.all()
     if not all_exm.exists():
         return None
-    rand_id = random.randint(1, len(all_exm))
-    my_rand = all_exm.get(id=rand_id)
+    my_rand = random.choice(all_exm)
     return my_rand
 
 
-def play_game_adjektiv_multi(request, game_name='adjektiv', room_id=None):
+def play_game_ki_multi(request, game_name='ki', room_id=None):
 
     if not request.user.is_authenticated:
         messages.warning(request, 'You are not logged in.', extra_tags='warning')
@@ -50,13 +49,13 @@ def play_game_adjektiv_multi(request, game_name='adjektiv', room_id=None):
             'game_colors': game_colors,
             'MAX_DICE': MAX_DICE
         }
-        return render(request, 'adjektiv_game_multi.html', context=context)
+        return render(request, 'ki_game_multi.html', context=context)
     else:
         messages.warning(request, 'Game is over.', extra_tags='warning')
         return redirect('home')
 
 
-def play_game_adjektiv_one(request, game_name='adjektiv'):
+def play_game_ki_one(request, game_name='ki'):
     if request.user.is_authenticated:
         if not request.session['players']:
             return redirect(reverse('home'))
@@ -105,20 +104,20 @@ def play_game_adjektiv_one(request, game_name='adjektiv'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Adjektiv',
-                                    score=player['game_score'])
-                                print(request.session['winner'])
+                                # winner = User.objects.get(id=player['id'])
+                                # GamesRecords.objects.create(
+                                #     user=winner,
+                                #     game_name='KI',
+                                #     score=player['game_score'])
+                                # print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                adj_score = UserScores.objects.get(user=person).adjektiv_score
-                                adj_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(adjektiv_score=adj_score)
+                    # if request.session['winner']:
+                    #     for pl in players:
+                    #         if pl['game_score'] >= MIN_SCORE:
+                    #             person = User.objects.get(id=pl['id'])
+                    #             vok_score = UserScores.objects.get(user=person).vokabel_score
+                    #             vok_score += pl['game_score']
+                    #             UserScores.objects.filter(user=person).update(vokabel_score=vok_score)
 
             request.session['players'] = players
             circle_data = []
@@ -147,30 +146,9 @@ def play_game_adjektiv_one(request, game_name='adjektiv'):
                 'rand_example': rand_example,
                 'game_colors': game_colors
             }
-            return render(request, 'adjektiv_game_one.html', context=context)
+            return render(request, 'ki_game_one.html', context=context)
         else:
             request.session['players'] = []
             return redirect(reverse('home'))
     else:
         return redirect(reverse('user_login'))
-
-
-def add_adjektiv(request):
-    if request.user.is_superuser:
-        my_positiv = "maschinell"
-        is_exist = Adjektiv.objects.filter(positiv=my_positiv).exists()
-        if not is_exist:
-            Adjektiv.objects.create(
-                english="mechanical, automatic",
-                turkish="otomatik, makinevi",
-                positiv=my_positiv,
-                komparativ="maschineller",
-                superlativ="am maschinellsten"
-            )
-            messages.success(request, 'Adjektiv added successfully', extra_tags='success')
-        else:
-            messages.warning(request, 'Adjektiv already exists', extra_tags='warning')
-        return redirect(reverse('home'))
-    else:
-        messages.warning(request, 'You are not admin!', extra_tags='warning')
-        return redirect(reverse('home'))

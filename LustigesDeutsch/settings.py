@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'Satz.apps.SatzConfig',
     'Adjektivdeklination.apps.AdjektivdeklinationConfig',
     'Zahlen.apps.ZahlenConfig',
+    'KI.apps.KiConfig',
+    'Software.apps.SoftwareConfig',
 ]
 
 MIDDLEWARE = [
