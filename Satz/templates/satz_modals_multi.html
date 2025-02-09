@@ -1,3 +1,4 @@
+{% load static %}
 <div class="modal bg-dark fade" id="exampleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div id="modal_content" class="modal-content">
@@ -22,6 +23,7 @@
   </div>
 </div>
 
+<script src="{% static 'js/red_green_check.js' %}"></script>
 <script>
     let my_button = document.querySelector('button[name="answer"]');
     // Pass players data to JavaScript
@@ -30,6 +32,7 @@
         const client_answer = document.getElementById('answer_box').value;
         if (client_answer !== '') {
             var get_answer = atob(document.getElementById('hiddenData').dataset.value);
+            let h4 = red_green(client_answer, get_answer);
             e.preventDefault();
             if (client_answer === get_answer) {
                 score = 1;
@@ -42,7 +45,7 @@
             document.getElementById('answer_answer').hidden = true;
             document.getElementById('result-msg').hidden = false;
             document.getElementById('answer_box').value = "";
-            document.getElementById('german_answer').textContent = "🇩🇪 " + get_answer;
+            document.getElementById('german_answer').innerHTML = "🇩🇪 " + h4.innerHTML;
 
 
             my_button.id = 'next_turn';

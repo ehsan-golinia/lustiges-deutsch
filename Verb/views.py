@@ -106,20 +106,7 @@ def play_game_verb_one(request, game_name='verb'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Verb',
-                                    score=player['game_score'])
-                                print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                v_score = UserScores.objects.get(user=person).verb_score
-                                v_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(verb_score=v_score)
 
             request.session['players'] = players
             circle_data = []
@@ -158,35 +145,35 @@ def play_game_verb_one(request, game_name='verb'):
 
 def add_verb(request):
     if request.user.is_superuser:
-        infinitiv = "verspäten"
+        infinitiv = "ankündigen"
         my_german = Verb.objects.filter(infinitiv=infinitiv).exists()
         if not my_german:
-            level = "C2"
-            english = "to be late, to delay"
-            turkish = "gecikmek, geç kalmak"
+            level = "B1"
+            english = "to announce, notify to"
+            turkish = "bildirmek"
             this_verb = Verb.objects.create(
                 level=level, infinitiv=infinitiv,
                 english=english, turkish=turkish
             )
             Praesens.objects.create(
                 verb=this_verb,
-                ich="verspäte",
-                du="verspätest",
-                er_sie_es="verspätet",
-                wir="verspäten",
-                ihr="verspätet",
-                sie_Sie="verspäten",
+                ich="kündige an",
+                du="kündigst an",
+                er_sie_es="kündigt an",
+                wir="kündigen an",
+                ihr="kündigt an",
+                sie_Sie="kündigen an",
             )
             Praeteritum.objects.create(
                 verb=this_verb,
-                ich="verspätete",
-                du="verspätetest",
-                er_sie_es="verspätete",
-                wir="verspäteten",
-                ihr="verspätetet",
-                sie_Sie="verspäteten",
+                ich="kündigte an",
+                du="kündigtest an",
+                er_sie_es="kündigte an",
+                wir="kündigten an",
+                ihr="kündigtet an",
+                sie_Sie="kündigten an",
             )
-            partizip_ii = "verspätet"
+            partizip_ii = "angekündigt"
             status = "haben"
             if status == "haben":
                 Perfekt.objects.create(
@@ -221,12 +208,12 @@ def add_verb(request):
             )
             Konjunktiv_II.objects.create(
                 verb=this_verb,
-                ich="verspätete",
-                du="verspätetest",
-                er_sie_es="verspätete",
-                wir="verspäteten",
-                ihr="verspätetet",
-                sie_Sie="verspäteten",
+                ich="kündigte an",
+                du="kündigtest an",
+                er_sie_es="kündigte an",
+                wir="kündigten an",
+                ihr="kündigtet an",
+                sie_Sie="kündigten an",
             )
             messages.success(request, 'Verb added successfully', extra_tags='success')
         else:

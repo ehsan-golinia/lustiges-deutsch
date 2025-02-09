@@ -107,20 +107,7 @@ def play_game_singular_plural_one(request, game_name='singular_plural'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Singular_Plural',
-                                    score=player['game_score'])
-                                print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                sp_score = UserScores.objects.get(user=person).singular_plural_score
-                                sp_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(singular_plural_score=sp_score)
 
             request.session['players'] = players
             circle_data = []

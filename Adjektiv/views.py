@@ -105,20 +105,7 @@ def play_game_adjektiv_one(request, game_name='adjektiv'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Adjektiv',
-                                    score=player['game_score'])
-                                print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                adj_score = UserScores.objects.get(user=person).adjektiv_score
-                                adj_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(adjektiv_score=adj_score)
 
             request.session['players'] = players
             circle_data = []
@@ -157,15 +144,15 @@ def play_game_adjektiv_one(request, game_name='adjektiv'):
 
 def add_adjektiv(request):
     if request.user.is_superuser:
-        my_positiv = "maschinell"
+        my_positiv = "entspannt"
         is_exist = Adjektiv.objects.filter(positiv=my_positiv).exists()
         if not is_exist:
             Adjektiv.objects.create(
-                english="mechanical, automatic",
-                turkish="otomatik, makinevi",
+                english="relaxed",
+                turkish="rahat",
                 positiv=my_positiv,
-                komparativ="maschineller",
-                superlativ="am maschinellsten"
+                komparativ="entspannter",
+                superlativ="am entspanntesten"
             )
             messages.success(request, 'Adjektiv added successfully', extra_tags='success')
         else:

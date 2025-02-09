@@ -104,19 +104,7 @@ def play_game_artikel_one(request, game_name='artikel'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Artikel',
-                                    score=player['game_score'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                art_score = UserScores.objects.get(user=person).artikel_score
-                                art_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(artikel_score=art_score)
 
             request.session['players'] = players
             circle_data = []

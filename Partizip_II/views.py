@@ -106,20 +106,7 @@ def play_game_partizip_II_one(request, game_name='partizip_II'):
 
                             if player['game_state'] == 30:
                                 request.session['winner'] = player['name']
-                                winner = User.objects.get(id=player['id'])
-                                GamesRecords.objects.create(
-                                    user=winner,
-                                    game_name='Partizip_II',
-                                    score=player['game_score'])
-                                print(request.session['winner'])
                                 messages.success(request, f'{player["name"]} won the game', extra_tags='success')
-                    if request.session['winner']:
-                        for pl in players:
-                            if pl['game_score'] >= MIN_SCORE:
-                                person = User.objects.get(id=pl['id'])
-                                pz2_score = UserScores.objects.get(user=person).partizip_II_score
-                                pz2_score += pl['game_score']
-                                UserScores.objects.filter(user=person).update(partizip_II_score=pz2_score)
 
             request.session['players'] = players
             circle_data = []

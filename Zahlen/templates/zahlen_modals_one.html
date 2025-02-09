@@ -1,3 +1,4 @@
+{% load static %}
 <div class="modal bg-dark fade" id="exampleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -19,6 +20,7 @@
     </div>
   </div>
 
+<script src="{% static 'js/red_green_check.js' %}"></script>
 <script>
     // Pass players data to JavaScript
     let score = 0;
@@ -28,8 +30,9 @@
 
     const answer = document.getElementById('answer_box').value;
     if (answer !== '') {
+        let h4 = red_green(answer, '{{ rand_example.german }}');
         const result_msg = document.getElementById('result-msg');
-        result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title">🇩🇪 {{ rand_example.german }}</h4></div>`;
+        result_msg.innerHTML = `<div class="col mx-1 d-flex justify-content-center align-items-center"><h4 class="modal-title">🇩🇪 ${h4.innerHTML}</h4></div>`;
 
         if (answer === '{{ rand_example.german }}') {
             score = 1;
